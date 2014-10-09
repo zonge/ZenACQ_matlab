@@ -1,0 +1,28 @@
+﻿// // is for comment indicator
+$copy_file = Do you want to copy SD Z3D files?
+$delete_file = Do you want to delete the data ?
+// Comment
+
+$data_look = Do you want to look at the data ?
+
+//Channels
+$channel_str=Channel//Channels yes //fdfkdk //
+
+// l_read_fileAndError
+$read_file_err1 = There are more than one
+$read_file_err2 = file in the directory. Please delete unused
+$read_file_err3 = No file
+$read_file_err4 = found in the directory.
+$read_file_err5 = Cannot open
+$read_file_err6 = is empty
+
+// ZenSCH message
+//$ZenSCH_err1 = No schedule name !
+$ZenSCH_err1 = 没有时间表的名字！
+$ZenSCH_err2 = No schedule set !
+$ZenSCH_err3 = Select one row at the time !
+$ZenSCH_err4 = Must be numbers !
+$ZenSCH_err5 = The duration input is incorrect.
+$ZenSCH_err6 = ERROR : Total duration equals 0 !
+$ZenSCH_err7 = Exceed the maximum amount of schedule lines !
+$ZenSCH_err8 = Must be numbers !
