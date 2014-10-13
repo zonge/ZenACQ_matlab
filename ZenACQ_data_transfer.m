@@ -5,10 +5,13 @@ function [ handles ] = ZenACQ_data_transfer( handles )
 % Created by Marc Benoit
 % Oct 10, 2014
 
-
+% Initialize
 set(handles.msg_txt,'Visible','off')
 
-warn=warndlg(['The data will copied into : ' handles.setting.z3d_location],'Data transfert');
+% UPDATE SETTINGS in case they have been modify after launching the program.
+handles.setting = m_get_setting_key(handles.main.Setting_ext,handles,true); 
+
+warn=warndlg(['Data will copied into : ' handles.setting.z3d_location],'Data transfert');
 
 waitfor(warn)
 
@@ -50,9 +53,15 @@ l_SDavailable2( handles,NbD_b_UMASS,COM_Nb );
 
 %% COPY DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 handles.path_output=handles.setting.z3d_location;
-data_transfert( handles,'*.Z3D' );
+[~,dir_path]=data_transfert( handles,'*.Z3D' );
 
 set(handles.msg_txt,'Visible','on')
+
+
+% open the folder
+if ~strcmp(dir_path,'empty')
+winopen(dir_path)
+end
 
 
 end
