@@ -1,24 +1,140 @@
-﻿// // is for comment indicator
-$copy_file = Do you want to copy SD Z3D files?
-$delete_file = Do you want to delete the data ?
-// Comment
+﻿//////////////////////////////////////////////
+//ZenACQ ///////////////////////////////////
+//////////////////////////////////////////////
 
-$data_look = Do you want to look at the data ?
+$Receiver_str = Receiver
+$Transmitter_str = Transmitter
+$Data_transfer_str = Data Transfer
+$Calibration_str = Calibration
+$Settings_str = Settings
+$Options_str = Options
+$ZenACQ_err1 = No Zen Channel found
 
-//Channels
-$channel_str=Channel//Channels yes //fdfkdk //
+//ZenACQ Timer
+$channel_str = Channel
+$channel_str_plurial = s
+$ZenACQ_info_msg1 = Start your ZEN
+$ZenACQ_info_msg2= Restart your ZEN
 
-// l_read_fileAndError
-$read_file_err1 = There are more than one
-$read_file_err2 = file in the directory. Please delete unused
-$read_file_err3 = No file
-$read_file_err4 = found in the directory.
-$read_file_err5 = Cannot open
-$read_file_err6 = is empty
+
+//////////////////////////////////////////////
+//Zen RX/TX //////////////////////////////////
+//////////////////////////////////////////////
+
+// INFO PANEL
+$general_info_panel_str = General Information
+$job_name_str = JOB NAME :
+$job_number_str = JOB # :
+$job_by_str = JOB BY :
+$job_for_str = JOB FOR :
+$operator_str = OPERATOR :
+
+//SCHEDULE PANEL
+$schedule_panel_str = Schedule
+$new_push_str = New Schedule
+$edit_push_str = Edit
+$start_time_str = START
+$end_time_str = END
+$data_push_str = today
+
+//GEOMETRY PANEL
+$survey_panel_str = Survey
+$stn_str = ZEN STN :
+$line_str = LINE NAME :
+$SX_azimuth_str = X AZIMUTH :
+$a_space_str = A-Space :
+$s_space_str = S-Space :
+$z_positive_str = Z positive :
+$save_push_str = Save
+$check_setup_str = CHECK SETUP
+
+//OTHERS
+$box_str = BOX #
+$status_channel_str = CHANNELS :
+$status_sats_str = SATELLITES :
+$status_sync_str = SYNC :
+$set_up_str = COMMIT
+$set_up_transmit_str = TRANSMIT
+$version_str = version :
+$gps_time_str = Time dif :
+$status_volts_str = VOLTAGE :
+$zen_zone_str = Zen Zone :
+$zen_altitude = Zen Altitude :
+$transmit_msg = Wait for sync before Transmitting
+
+// TIMER
+$time_zone_err1 = Your computer time does not match the GPS time. Please verify your Time zone or your computer time settings. Time difference :
+$time_zone_err2 = !! Time Zone Aberation !!
+$timer_msg1 = ZEN is running. Do not unplug
+$timer_msg2 = Starts in
+$timer_msg3 = Finishes in
+
+// OTHERS
+$ZenTitle = Zen
+$ZenTitle2 = Warning !
+$yes = yes
+$no = no
+
+// Version check
+$version_err1 = Your ZenBox does not have the same firmware on all the channels. Please go to Options to upgrade to the most recent firmware.	
+$version_err2 = This box uses different firmwares !!
+
+// Parameters AUTO-Check
+$input_err1 = STATION must be an integer !
+$input_err2 = LINE NAME must be smaller than 17 characters !
+$input_err3 = Line Azimuth must be between 0 and 360 !
+$input_err4 = Must be an number !
+
+// COMMIT CHECK VALUE
+$commit_msg1 = There is no BOARD calibration for this box. Do you want to continue ?
+$commit_msg2 = STATION is empty !
+$commit_msg3 = No schedule defined !
+$commit_msg4 = The start time of the schedule is anterior or to close to now.
+$commit_msg5 = The survey is not complete !
+$commit_msg6 = Do you want to check your setup first ?
+$commit_msg7 = Maximum number of characters is : 64
+
+// PROGRESS BAR
+$progress_title1 = Metadata
+$progress_title2 = Schedule
+$progress_title3 = Commit
+$progress_title4 = Calibration
+$progress_title5 = Copy files
+$progress_title6 = Delete files
+
+$progress_str1 = Clear Metadata
+$progress_str2 = Set Metadata :
+$progress_str3 = Set Calibration :
+$progress_str6 = Clear Schedule
+$progress_str4 = Set Schedule :
+$progress_str5 = Save All
+$progress_str7 = Wait for sync
+$progress_str8 = Data transfert
+
+//SYNC PROCESS
+$sync_err1 = The Zen is not responding [ sync ]. The syncing has stopped. You should relunch the program or/and restart your Zen, othersiwe you are likely to encounter issues.
+$sync_err2 = Waiting for channels to sync
+$sync_err3 = Sats
+
+// CALIBRATION
+$calibration_msg1 = CALIBRATION PROGRESS
+
+// SETTINGS
+$zenACQ_mode_str = ZenACQ mode
+$time_zone_str = Time Zone (UTC)
+$example_str = Ex: Arizona, UTC -7 hours
+$storage_location_str = Zen Files Storage Location
+$get_folder_push_str = Load
+$save_push_str = Save
+
+// DATA TRANSFER
+$data_transfer_msg1 = Data will copied into
+$data_transfer_msg2 = No z3D files found
+$data_transfer_msg3 = Do you want to erase SD cards ?
+
 
 // ZenSCH message
-//$ZenSCH_err1 = No schedule name !
-$ZenSCH_err1 = 没有时间表的名字！
+$ZenSCH_err1 = No schedule name !
 $ZenSCH_err2 = No schedule set !
 $ZenSCH_err3 = Select one row at the time !
 $ZenSCH_err4 = Must be numbers !
@@ -26,3 +142,16 @@ $ZenSCH_err5 = The duration input is incorrect.
 $ZenSCH_err6 = ERROR : Total duration equals 0 !
 $ZenSCH_err7 = Exceed the maximum amount of schedule lines !
 $ZenSCH_err8 = Must be numbers !
+
+// CAL
+$copy_file = Do you want to copy SD Z3D files?
+$delete_file = Do you want to delete the data ?
+$data_look = Do you want to look at the data ?
+
+// IO msg
+$read_file_err1 = There are more than one  //There are more than one
+$read_file_err2 = file in the directory. Please delete unused  //file in the directory. Please delete unused
+$read_file_err3 = No file //No file
+$read_file_err4 = found in the directory.  //found in the directory.
+$read_file_err5 = Cannot open  //Cannot open
+$read_file_err6 = is empty  //is empty
