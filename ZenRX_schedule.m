@@ -12,9 +12,13 @@ setappdata(0,'tunnel',ZenACQ_vars);                % SET GLOBAL VARIABLE
 setappdata(0,'tunnel2',edit_file);                 % SET GLOBAL VARIABLE
 
 
-w=ZenSCH;                                          % OPEN ZenSCH
+
+
+
+ w=ZenSCH;
+
 if exist('handles.jPanel','class'); handles.jPanel.setVisible(false);end
-uiwait(w)
+uiwait(w);
 
 handles.SCH=getappdata(0,'tunnelback');
 
