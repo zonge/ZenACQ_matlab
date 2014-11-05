@@ -2,9 +2,8 @@ function varargout = ZenACQ(varargin)
 % ZENACQ MATLAB code for ZenACQ.fig
 %      ZENACQ, Acquisition Interface for ZenBox
 
-% Last Modified by GUIDE v2.5 27-Sep-2014 13:31:00
+% Last Modified by GUIDE v2.5 05-Nov-2014 12:24:14
 
-% Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -30,7 +29,9 @@ function ZenACQ_OpeningFcn(hObject, ~, handles, varargin)
 % Choose default command line output for ZenACQ
 handles.output = hObject;
 
-handles = ini_ZenACQ(handles);
+clc;
+
+handles = ZenACQ_ini(handles);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -44,9 +45,11 @@ function receiver_Callback(~, ~, handles)
 % DELETE EXISTING OPEN SERIAL PORTS
 newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
 
+
 % SET VARIABLE to the other windows
+handles.main.type=0; %Receiver
 ZenAQC_vars.main=handles.main;
-ZenAQC_vars.setting=handles.setting;
+ZenAQC_vars.setting=m_get_setting_key(handles.main.Setting_ext,handles,true);
 ZenAQC_vars.language=handles.language;
 setappdata(0,'tunnel',ZenAQC_vars);
 
@@ -56,17 +59,34 @@ if ~strcmp('NONE',COM{1,1})
     % RUN ZenRX
     ZenRX;
 else
-    warndlg('No Zen Channel found','ZenACQ');
+    warndlg(handles.language.ZenACQ_err1,'ZenACQ');
 end
                      
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  2. TRANSMITER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function transmitter_Callback(~, ~, ~)
+function transmitter_Callback(~, ~, handles)
 
-%ZenTX                                   % OPEN ZenTX 
-%setappdata(0,'handles',handles);        % SET GLOBAL VARIABLE
+% DELETE EXISTING OPEN SERIAL PORTS
+newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
+
+
+% SET VARIABLE to the other windows
+handles.main.type=1; %Transmiter
+ZenAQC_vars.main=handles.main;
+ZenAQC_vars.setting=m_get_setting_key(handles.main.Setting_ext,handles,true);
+ZenAQC_vars.language=handles.language;
+setappdata(0,'tunnel',ZenAQC_vars);
+
+% UPDATE COM AVAILABLE
+COM=findCOM;
+if ~strcmp('NONE',COM{1,1})
+    % RUN ZenTX
+    ZenRX;
+else
+    warndlg(handles.language.ZenACQ_err1,'ZenACQ');
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,27 +102,46 @@ ZenACQ_calibration( handles );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  4. SETTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function setting_Callback(~, ~, handles)
+function setting_Callback(hObject, ~, handles)
 
 % SET VARIABLE to the other windows
 ZenAQC_vars.main=handles.main;
-ZenAQC_vars.setting=handles.setting;
+ZenAQC_vars.setting=m_get_setting_key(handles.main.Setting_ext,handles,true);
 ZenAQC_vars.language=handles.language;
 setappdata(0,'tunnel',ZenAQC_vars);
 
 % RUN ZEN PREF
 ZenPREF
 
+% UPDATE GUI AND PARAMETERS
+handles.setting = m_get_setting_key(handles.main.Setting_ext,handles,true);
+
+if str2double(handles.setting.ZenACQ_mode)==2 % IF TX MODE
+    set(handles.receiver,'Position',[5.6 30.538 44.4 5.692]);
+    set(handles.transmitter,'Visible','on','Position',[5.6 24.5 44.4 5.692])
+else                                          % IF NOT TX MODE
+    set(handles.receiver,'Position',[5.6 27 44.4 9.231]);
+    set(handles.transmitter,'Visible','off','Position',[5.6 23.692 44.4 2.538])
+end
+
+% Update handles structure
+guidata(hObject, handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  5. DATA TRANSFER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function data_transfert_Callback(~, ~, handles)
+function data_transfert_Callback(hObject, ~, handles)
 
 % DELETE EXISTING OPEN SERIAL PORTS
 newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
 
 ZenACQ_data_transfer( handles );
+
+% UPDATE PARAMETERS
+handles.setting = m_get_setting_key(handles.main.Setting_ext,handles,true); 
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,7 +154,7 @@ newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
 
 % SET VARIABLE to the other windows
 ZenAQC_vars.main=handles.main;
-ZenAQC_vars.setting=handles.setting;
+ZenAQC_vars.setting=m_get_setting_key(handles.main.Setting_ext,handles,true);
 ZenAQC_vars.language=handles.language;
 setappdata(0,'tunnel',ZenAQC_vars);
 
