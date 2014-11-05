@@ -1,6 +1,5 @@
 function [ handles,CH1_index,status ] = connection_process( handles )
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 %%% CONNECT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,7 +34,7 @@ end
 for i=1:connected_ch
     [ch_info,status_connect]=connect2(C.ch_serial{i});
     
-    ch_info.BoardSN=QuickSendReceive(C.ch_serial{i},'version',10,'FPGAserialnumber:0x',',buildnumber:')
+    ch_info.BoardSN=QuickSendReceive(C.ch_serial{i},'version',10,'FPGAserialnumber:0x',',buildnumber:');
     
     if status_connect==0
         
@@ -66,6 +65,23 @@ if check_nb_of_1_ch>1
     ,'Channels 1 Error');
 end
 
+
+% RE-INITIATE 339 IF NEEDED
+% Check if ok
+initiate_status=true;
+for i=1:connected_ch
+    if C.ch_info{1,i}.LogData~=0  || C.ch_info{1,i}.LogTerminal~=0 || C.ch_info{1,i}.Datatype~=1
+        initiate_status=false;
+        break
+    end
+end
+
+% Initiate
+if initiate_status==false
+msg=warndlg('This Zenbox is not configure properly. Click OK to fix it. ','Zen initialization');
+uiwait(msg)
+Zen_default( handles,C,connected_ch );
+end
 % HANDLES CHANNELS VARIABLES
 handles.CHANNEL=C;
 
