@@ -1,7 +1,7 @@
 function varargout = ZenPREF(varargin)
 % ZENPREF MATLAB code for ZenPREF.fig
 
-% Last Modified by GUIDE v2.5 17-Sep-2014 10:50:19
+% Last Modified by GUIDE v2.5 20-Oct-2014 08:56:56
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -38,9 +38,18 @@ handles.language=ZenACQ_vars.language;
 config_file_name = 'ZenACQ.cfg';
 if exist(config_file_name,'file')==2
 handles.setting = m_get_setting_key(config_file_name,handles,true);
-set(handles.timezone_box,'String',handles.setting.time_zone)
-set(handles.storage_loc_box,'String',handles.setting.z3d_location)
+set(handles.timezone_box,'String',handles.setting.time_zone);
+set(handles.ZenACQ_mode_popup,'Value',str2double(handles.setting.ZenACQ_mode));
+set(handles.storage_loc_box,'String',handles.setting.z3d_location);
 end
+
+% LANGUAGE
+set(handles.zenACQ_mode_str,'String',handles.language.zenACQ_mode_str) 
+set(handles.time_zone_str,'String',handles.language.time_zone_str) 
+set(handles.example_str,'String',handles.language.example_str) 
+set(handles.storage_location_str,'String',handles.language.storage_location_str) 
+set(handles.get_folder_push,'String',handles.language.get_folder_push_str) 
+set(handles.save_push,'String',handles.language.save_push_str) 
 
 % Update handles structure
 guidata(hObject, handles);
@@ -62,12 +71,18 @@ set(handles.storage_loc_box,'String',folder_name)
 function timezone_box_Callback(~, ~, ~)
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% ZenACQ mode  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function ZenACQ_mode_popup_Callback(~, ~, ~)
+
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % SAVE  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function save_push_Callback(hObject, ~, handles)
 
 z3d_location=get(handles.storage_loc_box,'String');
 time_zone=str2double(get(handles.timezone_box,'String'));
+ZenACQ_mode_popup=get(handles.ZenACQ_mode_popup,'Value');
 if isnan(time_zone)
     beep
     set(handles.timezone_box,'Visible','on','String','')
@@ -83,6 +98,7 @@ end
 
 l_modif_file( handles.main.Setting_ext,'$z3d_location',z3d_location);
 l_modif_file( handles.main.Setting_ext,'$time_zone',num2str(time_zone));
+l_modif_file( handles.main.Setting_ext,'$ZenACQ_mode',num2str(ZenACQ_mode_popup));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -143,5 +159,8 @@ function storage_loc_box_CreateFcn(hObject, ~, ~)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');end
 function timezone_box_CreateFcn(hObject, ~, ~)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');end
+function ZenACQ_mode_popup_CreateFcn(hObject, ~, ~)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');end
