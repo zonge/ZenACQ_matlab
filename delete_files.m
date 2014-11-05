@@ -1,8 +1,6 @@
-function delete_files(left_bar,bottom_bar,width_bar,height_bar)
+function delete_files(left_bar,bottom_bar,width_bar,height_bar,EXTENSION)
 %Copy Z3D files from SD cards to an OUTPUT define path
 
-% PARAMETER
-EXTENSION='*.Z3D';  % Extension
 
 % get the list of current drives
 import java.io.*;
@@ -10,7 +8,7 @@ f=File('');
 r=f.listRoots;
 
 % INTIATE PROGRESS BAR
-progress = waitbar(0,'DELETE Z3DS...','Name','Delete Z3Ds' ...
+progress = waitbar(0,'DELETE ','Name',['Delete ' EXTENSION] ...
     ,'Position',[left_bar bottom_bar width_bar height_bar]);
 
 
@@ -25,9 +23,6 @@ for i=1:numel(r)
      end
 end
 
-if total_files==0
-    msgbox('No Z3D file found', 'DELETE Z3Ds ');
-end
 
 % MAIN LOOP
 file_nb=0;
