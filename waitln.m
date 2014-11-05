@@ -67,7 +67,7 @@ end
 
 if ~strcmp(command_name,'Flush') && ~strcmp(command_name,'gettime') ...
         && ~strcmp(command_name,'sync') && ~strcmp(command_name,'numsats') ...
-        && ~strcmp(command_name,'TESTPWRADCS')
+        && ~strcmp(command_name,'TESTPWRADCS') && ~strcmp(command_name,'GETLLA')
 disp(['[ ' command_name ' ] command :' num2str(timing) ' seconds'])
 %disp(data.Query)               % DISPLAY TERMINAL
 end
