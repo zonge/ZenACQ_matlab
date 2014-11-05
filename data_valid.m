@@ -167,4 +167,5 @@ if test~=0
        end
 end
 
-waitfor(f);
+close(f)
+%waitfor(f);
