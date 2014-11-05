@@ -34,7 +34,7 @@ for i=1:numel(r)
      list=dir_fixed([char(r(i)) EXTENSION]);
      if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
          for j=1:size(list,1)
-          if list(j).bytes>MIN_SIZE
+          if list(j).bytes>MIN_SIZE && ~strcmp(list(j).name(1:3),'ZEN')
               total_files=total_files+1;
           end
          end
@@ -47,7 +47,7 @@ for i=1:numel(r)
      list=dir_fixed([char(r(i)) EXTENSION]);  
      if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
          for j=1:size(list,1)
-          if list(j).bytes>MIN_SIZE
+          if list(j).bytes>MIN_SIZE && ~strcmp(list(j).name(1:3),'ZEN')
               file_nb=file_nb+1;
               
               % SOURCE
