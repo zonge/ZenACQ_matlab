@@ -11,32 +11,24 @@ classdef schedule
     sr
     gain
     attenuator
+    TX_freq
     end
    
     methods
         % Constructor
-         function obj=schedule(duration,sr,gain)
+         function obj=schedule(duration,sr,gain,TX_freq)
                  if nargin==3
                      obj.duration=duration;
                      obj.sr=sr;
                      obj.gain=gain;
+                 elseif nargin==4
+                     obj.duration=duration;
+                     obj.sr=sr;
+                     obj.gain=gain;
+                     obj.TX_freq=TX_freq;
                  end  
          end
         
-        %  Datatype
-%         function Datatype_c=get.Datatype_c(obj)
-%             if isnan(obj.Datatype)
-%                 Datatype_c=obj.Datatype;
-%             elseif obj.Datatype==1
-%                     Datatype_c='Binary';
-%             elseif obj.Datatype==0
-%                     Datatype_c='ANSI';
-%             else
-%                     Datatype_c=[];
-%             end
-%
-%       end
-
     end  
 
 end
