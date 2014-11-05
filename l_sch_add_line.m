@@ -2,7 +2,23 @@ function [ handles ] = l_sch_add_line( handles )
 
 language=handles.language;
 
-% GEt DURATION INFOS
+
+gain=get(handles.gain_popup,'Value');
+sr_value=get(handles.SR_popup,'Value');
+sr_str=get(handles.SR_popup,'String');
+
+% GET SR AND GAIN
+if strcmp(sr_str(sr_value),'Low Band')
+    sr=0;
+elseif strcmp(sr_str(sr_value),'High Band')
+    sr=4;
+elseif strcmp(sr_str(sr_value),'Mid Band')
+    sr=2;
+end
+
+survey_type=str2double(handles.setting.ZenACQ_mode);
+if handles.main.type==0
+
 day_str=get(handles.day_box,'String');
 if isempty(day_str);day=0;else day=str2double(day_str);end
 hour_str=get(handles.hour_box,'String');
@@ -28,14 +44,18 @@ else
    set(handles.error_display,'Visible','off') 
 end
 
-% GET SR AND GAIN
-gain=get(handles.gain_popup,'Value');
-sr_value=get(handles.SR_popup,'Value');
-sr_str=get(handles.SR_popup,'String');
-if strcmp(sr_str(sr_value),'Low Band')
-    sr=0;
-elseif strcmp(sr_str(sr_value),'High Band')
-    sr=4;
+elseif survey_type==2 && handles.main.type==1
+    
+tx_freq_value = get(handles.tx_freq_popup,'Value');
+tx_freq_str = get(handles.tx_freq_popup,'String');
+tx_freq_str2=tx_freq_str(tx_freq_value);
+nb_cycles_value = get(handles.nb_cycles_popup,'Value');
+nb_cycles_str = get(handles.nb_cycles_popup,'String');
+
+nb_cycle=str2double(nb_cycles_str(nb_cycles_value));
+TX_freq=str2double((strrep(tx_freq_str2{1,1}, 'Hz', '')));
+
+duration=nb_cycle/TX_freq;
 end
 
 % Increment the number of schedule.
@@ -47,8 +67,11 @@ if nb_schedule>16
     set(handles.error_display,'Visible','on','String',language.ZenSCH_err6)
     return;
 end
-
-handles.SCHEDULE(nb_schedule,1)=schedule(duration,sr,gain);  % CREATE OBJS
+if handles.main.type==0 % RX
+    handles.SCHEDULE(nb_schedule,1)=schedule(duration,sr,gain);    
+elseif handles.main.type==1 % TX
+    handles.SCHEDULE(nb_schedule,1)=schedule(duration,sr,gain,TX_freq);  % CREATE OBJS
+end
 
 l_sch_set_table( handles,nb_schedule );  % UPDATE TABLE
 
@@ -58,10 +81,12 @@ set(handles.schedule_tbl,'UserData',[]);  % SET TABLE SELECTION TO NONE
 
 l_sch_total_time( handles,nb_schedule );  % SET TOTAL TIME
 
+if handles.main.type==0
 % SET BACK TO NULL
 set(handles.day_box,'String','');
 set(handles.hour_box,'String','');
 set(handles.min_box,'String','');
 set(handles.sec_box,'String','');
+end
 
 end
