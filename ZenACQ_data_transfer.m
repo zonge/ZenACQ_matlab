@@ -8,10 +8,7 @@ function [ handles ] = ZenACQ_data_transfer( handles )
 % Initialize
 set(handles.msg_txt,'Visible','off')
 
-% UPDATE SETTINGS in case they have been modify after launching the program.
-handles.setting = m_get_setting_key(handles.main.Setting_ext,handles,true); 
-
-warn=warndlg(['Data will copied into : ' handles.setting.z3d_location],'Data transfert');
+warn=warndlg([handles.language.data_transfer_msg1 ' : ' handles.setting.z3d_location],handles.language.progress_str8);
 
 waitfor(warn)
 
@@ -52,6 +49,7 @@ l_SDavailable2( handles,NbD_b_UMASS,COM_Nb );
 
 
 %% COPY DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+pause(2)
 handles.path_output=handles.setting.z3d_location;
 [~,dir_path]=data_transfert( handles,'*.Z3D' );
 
