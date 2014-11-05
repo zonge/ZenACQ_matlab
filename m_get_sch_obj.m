@@ -14,9 +14,14 @@ file_content=l_get_file_content( ext,handles,display_msg );
     total_time=0;
     for i=1:size(file_content,1)
         key_sch=l_search_key(['$schline' num2str(i)],file_content,ext);
-        sch=textscan(key_sch,'%d;%d;%d');
+        sch=textscan(key_sch,'%f;%f;%f');
         total_time=total_time+sch{1,1};
-        SCHEDULE.OBJ(i,1)=schedule(sch{1,1},sch{1,2},sch{1,3});  % CREATE SCH OBJS
+        if handles.main.type==0
+            SCHEDULE.OBJ(i,1)=schedule(sch{1,1},sch{1,2},sch{1,3});  % CREATE SCH OBJS
+        elseif handles.main.type==1
+            SCHEDULE.OBJ(i,1)=schedule(sch{1,1},1024,sch{1,3},sch{1,2});  % CREATE SCH OBJS
+        end
+        
     end
     total_time=total_time+handles.main.time_btw_sch*(size(file_content,1)-1);
     
