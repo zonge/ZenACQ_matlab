@@ -13,6 +13,44 @@ handles.main.time_btw_sch=10; % time between two schedule
 % SET WINDOWS NAME
 set(handles.ZenRX,'Name',[handles.main.ProgramName ' ' num2str(handles.main.ProgramVersion) ])
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LANGUAGE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+set(handles.box_str,'String',handles.language.box_str)
+set(handles.status_channel,'String',handles.language.status_channel_str)
+set(handles.status_sats,'String',handles.language.status_sats_str)
+set(handles.status_sync,'String',handles.language.status_sync_str)
+
+set(handles.general_info_panel,'Title',handles.language.general_info_panel_str)
+set(handles.job_name_str,'String',handles.language.job_name_str)
+set(handles.job_number_str,'String',handles.language.job_number_str)
+set(handles.job_by_str,'String',handles.language.job_by_str)
+set(handles.job_for_str,'String',handles.language.job_for_str)
+set(handles.operator_str,'String',handles.language.operator_str)
+
+set(handles.schedule_panel,'Title',handles.language.schedule_panel_str)
+set(handles.new_push,'String',handles.language.new_push_str)
+set(handles.edit_push,'String',handles.language.edit_push_str)
+set(handles.start_time_str,'String',handles.language.start_time_str)
+set(handles.end_time_str0,'String',handles.language.end_time_str)
+set(handles.date_push,'String',handles.language.data_push_str)
+
+set(handles.survey_panel,'Title',handles.language.survey_panel_str)
+set(handles.stn_str,'String',handles.language.stn_str)
+set(handles.line_str,'String',handles.language.line_str)
+set(handles.SX_azimut_str,'String',handles.language.SX_azimuth_str)
+set(handles.a_space_str,'String',handles.language.a_space_str)
+set(handles.s_space_str,'String',handles.language.s_space_str)
+set(handles.z_positive_str,'String',handles.language.z_positive_str)
+set(handles.save_push,'String',handles.language.save_push_str)
+set(handles.check_setup,'String',handles.language.check_setup_str)
+
+set(handles.set_up,'String',handles.language.set_up_str)
+set(handles.version_txt,'String',handles.language.version_str)
+set(handles.gps_time_str,'String',handles.language.gps_time_str)
+set(handles.status_volts,'String',handles.language.status_volts_str)
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SERIAL CONNECTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,15 +70,13 @@ if status==0
     test_version=sum(cell2mat(strfind(version,version{1,1})));
     
     if test_version==size(handles.CHANNEL.ch_info,2)
-        set(handles.version_txt,'String',['version : ' version{1,1}]);     
+        set(handles.version_txt,'String',[handles.language.version_str ' ' version{1,1}]);     
     else
-        set(handles.version_txt,'String','This box uses different firmwares !!','ForegroundColor','Red') 
-        warndlg('Your ZenBox does not have the same firmware on all the channels. Please go to Options to upgrade to the most recent firmware.','Zen')
+        set(handles.version_txt,'String',handles.language.version_err2,'ForegroundColor','Red') 
+        warndlg(handles.language.version_err1,handles.language.ZenTitle)
     end
     
-    set(handles.status_general_val,'ForegroundColor','green')
 else
-    set(handles.status_general_val,'ForegroundColor','red')
     return;
 end
 
@@ -58,7 +94,12 @@ start(handles.timer_RX);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SURVEY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+if str2double(handles.setting.ZenACQ_mode)==2 && handles.main.type==0
+    set(handles.general_info_panel,'Visible','off')
+    set(handles.schedule_panel,'Position',[0.018 0.577 0.967 0.327])
+else
+    
+end
 % READ SURVEY FILE
 survey_file_name = 'survey.zen';
 if exist(survey_file_name,'file')==2
@@ -101,20 +142,65 @@ end_acq_str=datestr(t,'dd-mmm-yyyy , HH:MM:SS');
 set(handles.end_time_str,'String',end_acq_str);
 handles.start_time=date_now_val2;
 
-
+if handles.main.type==1 % TX
+    set(handles.start_time_str,'Visible','off')
+    set(handles.date_push,'Visible','off')
+    set(handles.hour_popup,'Visible','off')
+    set(handles.min_popup,'Visible','off')
+    set(handles.end_time_str0,'Visible','off')
+    set(handles.end_time_str,'Visible','off')
+    set(handles.set_up,'Visible','off','String',handles.language.set_up_transmit_str)
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GEOMETRY DESIGN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % LOAD LAST SAVED DESIGN FILE
-handles.SCH.last_design=handles.setting.Rx_geometry_selected; 
+survey_type=str2double(handles.setting.ZenACQ_mode);
+if handles.main.type==0
+    handles.SCH.last_design=handles.setting.Rx_geometry_selected_MT;
+elseif handles.main.type==0 && survey_type==2
+    handles.SCH.last_design=handles.setting.Rx_geometry_selected_IP_RX; 
+elseif handles.main.type==1 && survey_type==2
+    handles.SCH.last_design=handles.setting.Rx_geometry_selected_IP_TX;
+end
 
 % FIND DESIGN
 main_file=l_find_design( handles );
 
+% Initiate H-field and TX
+handles.Ant=[];
+handles.TX=[];
+
 % UPDATE TABLE
-m_get_design( main_file,handles,false )
+handles=m_get_design( main_file,handles,false );
+
+UTM_toggle=get(handles.utm_checkbox,'Value'); %returns toggle state of utm_checkbox
+DATA=get(handles.geometry_table,'Data');
+A_space=str2double(get(handles.a_space_box,'String'));
+S_space=str2double(get(handles.s_space_box,'String'));  
+SX_azimuth=str2double(get(handles.SX_azimut_box,'String'));
+z_positive=get(handles.z_positive,'Value');
+ZenUTM.X=0;  % initiate
+ZenUTM.Y=0;  % initiate
+
+
+% Initiate CRES
+    for i=1:size(handles.CHANNEL.ch_info,2)
+        handles.CRES_values{i}=0;
+    end
+
+if handles.main.type==1 % TX
+set(handles.check_setup,'Visible','off')
+set(handles.z_positive_str,'Visible','off')
+set(handles.z_positive,'Visible','off')
+set(handles.utm_zone_str,'Visible','off')
+set(handles.altitude_str,'Visible','off')
+set(handles.altitude_str,'Visible','off')
+end
+
+handles=update_table( handles,DATA,UTM_toggle,A_space,S_space,SX_azimuth,z_positive,ZenUTM );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
