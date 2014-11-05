@@ -61,11 +61,54 @@ while a==0
        beep
        a=1;
        delete('done.fir')
-       set(handles.upgrade_msg,'String','Firmware is upgraded');
-       set(handles.upgrade_firmware,'Enable','on');
+        set(handles.upgrade_msg,'String','Firmware is upgraded');
+        set(handles.upgrade_firmware,'Enable','on');
    end
    pause(1)
 end
+
+
+
+%% Initiate box.
+
+% CONNECTION
+COM=findCOM;
+if strcmp(COM,'NONE');msgbox('No Zen connected');return;end
+
+% DELETE EXISTING OPEN SERIAL PORTS
+newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);end
+
+progress = waitbar(0,'Wait while loading Zen channels...','Name','Initialize Zen channels...' ...
+    ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
+    handles.main.GUI.width_bar handles.main.GUI.height_bar],'WindowStyle','modal');
+
+% LOOP FOR SERIAL PORT CONNECTIONS
+connected_ch=0; % to allows to continue without breaking if one channel is not responding
+for i=1:size(COM,1)
+    [~,ch_serial,status_connect]=connect1(COM{i});
+
+    if status_connect==0
+        connected_ch=connected_ch+1;
+        
+        C.ch_serial{connected_ch}=ch_serial;
+        
+        pourcentage=[sprintf('%0.2f',(i/(size(COM,1)*2))*100) ' %'];
+        waitbar((i/(size(COM,1)*2)),progress,sprintf('%s',pourcentage));
+    end
+end
+
+close(progress);
+
+if connected_ch~=size(COM,1)
+    disp('hello')
+    beep
+    set(handles.upgrade_msg,'String','The firmware was not installed, Please try again.');
+    beep
+    return;
+end
+
+% Initialize
+Zen_default( handles,C,connected_ch );
 
 end
 
