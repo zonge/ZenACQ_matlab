@@ -1,5 +1,5 @@
 classdef channel
-    %   OBJECT Channels
+    %   OBJECT Channels 
     %   Variable and function for the channel object
     
     properties(Constant)
