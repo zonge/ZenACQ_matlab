@@ -389,60 +389,60 @@ disp(['TS generated : ' num2str(ts_clock) ' s']);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ERROR SUMMARY  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-try
-% POINT(S) ERROR
-
-err1=find(GPS(TS_start+1:end-TS_end,3)~=ADfreq-1);  %% Block Error (sec.)
-
-if ~isempty(err1)
-err1(:,2)=GPS(err1(:,1),2)-floor(GPS(1,2)); %% Time from start
-err1(:,3)=GPS(err1(:,1),2);      %% Time (GPS)
-err1(:,4)=GPS(err1(:,1),3);      %% Number(s) of points in the Error block
-err1(:,5)=-((ADfreq)-err1(:,4)); %% Less/Extra points
-err1(:,6)=databytes+GPS(err1(:,1),1)*4+4;
-b=err1(:,5)~=-1;
-err=err1(b,:);
-a=(err1(:,5)==-1);               %% Add the second part if +1 is needed.
-err_minus=err1(a,:);
-else
-err=[];
-err_minus=[];
-end
-
-
-% TIMESTAMP ERROR
-
-% Gps time check
-delta=zeros((length(GPS)-1),1);
-for i=1:length(GPS)-1
-    delta(i,1)=GPS(i+1,2)-GPS(i,2);
-end
-
-% find where there is not a second between 2 bloc
-% and where timestamp value is twice the same.
-err_t(:,1)=unique([find(delta~=1);find(round(GPS(:,2))~=GPS(:,2),2)]);
-err_t(:,2)=GPS(err_t(:,1),2);
-err_t(1:end-1,3)=GPS(err_t(1:end-1,1)+1,2);
-if isempty(err_t)==0
-if GPS(end,2)-GPS(err_t(end,1),2)==0
-err_t(end,3)=NaN;
-else
-err_t(end,3)=GPS(err_t(end,1)+1,2);
-end
-end
-err_t(:,4)=err_t(:,3)-err_t(:,2);
-err_t(:,5)=(err_t(:,4)-1);
-err_t(:,7)=err_t(:,5)./(1/ADfreq);
-err_t(:,6)=databytes+GPS(err_t(:,1),1)*4+4;
-
-catch error
-    msg=['data_readZ3D Could not read (error in ERROR ANALYSIS) :' file];
-    disp(error)
-    errordlg(msg,'File Error');
-    error_status=1;
-    toc
-    return
-end
+% try
+% % POINT(S) ERROR
+% 
+% err1=find(GPS(TS_start+1:end-TS_end,3)~=ADfreq-1);  %% Block Error (sec.)
+% 
+% if ~isempty(err1)
+% err1(:,2)=GPS(err1(:,1),2)-floor(GPS(1,2)); %% Time from start
+% err1(:,3)=GPS(err1(:,1),2);      %% Time (GPS)
+% err1(:,4)=GPS(err1(:,1),3);      %% Number(s) of points in the Error block
+% err1(:,5)=-((ADfreq)-err1(:,4)); %% Less/Extra points
+% err1(:,6)=databytes+GPS(err1(:,1),1)*4+4;
+% b=err1(:,5)~=-1;
+% err=err1(b,:);
+% a=(err1(:,5)==-1);               %% Add the second part if +1 is needed.
+% err_minus=err1(a,:);
+% else
+% err=[];
+% err_minus=[];
+% end
+% 
+% 
+% % TIMESTAMP ERROR
+% 
+% % Gps time check
+% delta=zeros((length(GPS)-1),1);
+% for i=1:length(GPS)-1
+%     delta(i,1)=GPS(i+1,2)-GPS(i,2);
+% end
+% 
+% % find where there is not a second between 2 bloc
+% % and where timestamp value is twice the same.
+% err_t(:,1)=unique([find(delta~=1);find(round(GPS(:,2))~=GPS(:,2),2)]);
+% err_t(:,2)=GPS(err_t(:,1),2);
+% err_t(1:end-1,3)=GPS(err_t(1:end-1,1)+1,2);
+% if isempty(err_t)==0
+% if GPS(end,2)-GPS(err_t(end,1),2)==0
+% err_t(end,3)=NaN;
+% else
+% err_t(end,3)=GPS(err_t(end,1)+1,2);
+% end
+% end
+% err_t(:,4)=err_t(:,3)-err_t(:,2);
+% err_t(:,5)=(err_t(:,4)-1);
+% err_t(:,7)=err_t(:,5)./(1/ADfreq);
+% err_t(:,6)=databytes+GPS(err_t(:,1),1)*4+4;
+% 
+% catch error
+%     msg=['data_readZ3D Could not read (error in ERROR ANALYSIS) :' file];
+%     disp(error)
+%     errordlg(msg,'File Error');
+%     error_status=1;
+%     toc
+%     return
+% end
 
 % CLOCK %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
