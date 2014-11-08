@@ -14,10 +14,10 @@ function [ handles,dir_path ] = data_transfert( handles,EXTENSION )
                 handles.language.yes,handles.language.no,handles.language.no);
             
             switch choice2
-                case 'YES'
+                case handles.language.yes
                     delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
                         handles.main.GUI.width_bar,handles.main.GUI.height_bar,EXTENSION)  
-                case 'NO'
+                case handles.language.no
                     return;
             end
             
