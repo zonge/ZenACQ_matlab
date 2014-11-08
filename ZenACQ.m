@@ -2,7 +2,7 @@ function varargout = ZenACQ(varargin)
 % ZENACQ MATLAB code for ZenACQ.fig
 %      ZENACQ, Acquisition Interface for ZenBox
 
-% Last Modified by GUIDE v2.5 05-Nov-2014 12:24:14
+% Last Modified by GUIDE v2.5 06-Nov-2014 12:53:07
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -100,9 +100,9 @@ newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
 ZenACQ_calibration( handles );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  4. SETTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  4. ZENACQSETTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function setting_Callback(hObject, ~, handles)
+function ZenACQsetting_Callback(hObject, ~, handles)
 
 % SET VARIABLE to the other windows
 ZenAQC_vars.main=handles.main;
@@ -114,9 +114,9 @@ setappdata(0,'tunnel',ZenAQC_vars);
 ZenPREF
 
 % UPDATE GUI AND PARAMETERS
-handles.setting = m_get_setting_key(handles.main.Setting_ext,handles,true);
+handles.ZenACQsetting = m_get_setting_key(handles.main.Setting_ext,handles,true);
 
-if str2double(handles.setting.ZenACQ_mode)==2 % IF TX MODE
+if str2double(handles.ZenACQsetting.ZenACQ_mode)==2 % IF TX MODE
     set(handles.receiver,'Position',[5.6 30.538 44.4 5.692]);
     set(handles.transmitter,'Visible','on','Position',[5.6 24.5 44.4 5.692])
 else                                          % IF NOT TX MODE
@@ -138,7 +138,7 @@ newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
 ZenACQ_data_transfer( handles );
 
 % UPDATE PARAMETERS
-handles.setting = m_get_setting_key(handles.main.Setting_ext,handles,true); 
+handles.ZenACQsetting = m_get_setting_key(handles.main.Setting_ext,handles,true); 
 
 % Update handles structure
 guidata(hObject, handles);
