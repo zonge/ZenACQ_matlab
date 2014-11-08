@@ -31,19 +31,43 @@ if isempty(Xstn_box)
     set(handles.Xstn_box,'BackgroundColor',[1.0 0.949 0.867])
     return;
 end
+if isnan(str2double(Xstn_box))==1 || str2double(Xstn_box) ~= floor(str2double(Xstn_box))
+    beep
+    set(handles.error_msg,'Visible','on','String',handles.language.input_err1)
+    set(handles.Xstn_box,'BackgroundColor','red')
+    pause(0.1)
+    set(handles.Xstn_box,'BackgroundColor',[1.0 0.949 0.867])
+    pause(0.1)
+    set(handles.Xstn_box,'BackgroundColor','red')
+    pause(0.1)
+    set(handles.Xstn_box,'BackgroundColor',[1.0 0.949 0.867])  
+    return;       
+end
 
 Ystn_box=get(handles.Ystn_box,'String');
 if isempty(Ystn_box)
     beep
     set(handles.error_msg,'Visible','on','String',handles.language.commit_msg2)
-    set(handles.Xstn_box,'BackgroundColor','red')
+    set(handles.Ystn_box,'BackgroundColor','red')
     pause(0.1)
-    set(handles.Xstn_box,'BackgroundColor',[1.0 0.949 0.867])
+    set(handles.Ystn_box,'BackgroundColor',[1.0 0.949 0.867])
     pause(0.1)
-    set(handles.Xstn_box,'BackgroundColor','red')
+    set(handles.Ystn_box,'BackgroundColor','red')
     pause(0.1)
-    set(handles.Xstn_box,'BackgroundColor',[1.0 0.949 0.867])
+    set(handles.Ystn_box,'BackgroundColor',[1.0 0.949 0.867])
     return;
+end
+if isnan(str2double(Ystn_box))==1 || str2double(Ystn_box) ~= floor(str2double(Ystn_box))
+    beep
+    set(handles.error_msg,'Visible','on','String',handles.language.input_err1)
+    set(handles.Ystn_box,'BackgroundColor','red')
+    pause(0.1)
+    set(handles.Ystn_box,'BackgroundColor',[1.0 0.949 0.867])
+    pause(0.1)
+    set(handles.Ystn_box,'BackgroundColor','red')
+    pause(0.1)
+    set(handles.Ystn_box,'BackgroundColor',[1.0 0.949 0.867])  
+    return;       
 end
 
 % CHECK IF THERE IS A SCHEDULE
