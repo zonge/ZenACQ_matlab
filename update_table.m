@@ -19,9 +19,9 @@ if isnan(A_space)
     set(handles.a_space_box,'String',num2str(A_space))
 end
 
-if z_positive==1
+if z_positive==2
     degree_offset=-180;
-elseif z_positive==2
+elseif z_positive==1
     degree_offset=0;
 end
 CMP={'Ex' 'Ey' 'Hx' 'Hy' 'Hz' 'Off'};
