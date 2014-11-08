@@ -81,6 +81,7 @@ if isnan(str2double(Zen_stn))==1 || str2double(Zen_stn) ~= floor(str2double(Zen_
     set(handles.Xstn_box,'BackgroundColor','red')
     pause(0.1)
     set(handles.Xstn_box,'BackgroundColor',[1.0 0.949 0.867])  
+    set(hObject,'String',[]);
     return;       
 end
 
@@ -124,13 +125,14 @@ Zen_stn=get(hObject,'String');
 if isnan(str2double(Zen_stn))==1 || str2double(Zen_stn) ~= floor(str2double(Zen_stn))
     beep
     set(handles.error_msg,'Visible','on','String',handles.language.input_err1)
-    set(handles.Xstn_box,'BackgroundColor','red')
+    set(hObject,'BackgroundColor','red')
     pause(0.1)
-    set(handles.Xstn_box,'BackgroundColor',[1.0 0.949 0.867])
+    set(hObject,'BackgroundColor',[1.0 0.949 0.867])
     pause(0.1)
-    set(handles.Xstn_box,'BackgroundColor','red')
+    set(hObject,'BackgroundColor','red')
     pause(0.1)
-    set(handles.Xstn_box,'BackgroundColor',[1.0 0.949 0.867])  
+    set(hObject,'BackgroundColor',[1.0 0.949 0.867])  
+    set(hObject,'String',[]);
     return;       
 end 
 function line_box_Callback(hObject, ~, handles)
@@ -197,6 +199,7 @@ function a_space_box_Callback(hObject, ~, handles)
         set(hObject,'BackgroundColor','red')
         pause(0.1)
         set(hObject,'BackgroundColor',[0.941 0.941 0.941])
+        set(hObject,'String',[]);
     end
     
     
@@ -228,6 +231,7 @@ function s_space_box_Callback(hObject, ~, handles)
         set(hObject,'BackgroundColor','red')
         pause(0.1)
         set(hObject,'BackgroundColor',[0.941 0.941 0.941])
+        set(hObject,'String',num2str(1));
     end
     
 
