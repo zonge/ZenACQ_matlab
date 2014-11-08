@@ -2,8 +2,10 @@ function [ run_in ] = l_run_schedule(time,cal,letter,handles,FREQ,DUTY,SR,gain,r
     
 
     ADC_freq=2097152; %ADC speed CONSTANT VARIABLE
-
+   
+    if nargin>11
     ch_num=get(handles.geometry_table,'RowName');
+    end
     
     progress = waitbar(0,handles.language.progress_str6,'Name',handles.language.progress_title2 ...
     ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
@@ -47,6 +49,7 @@ function [ run_in ] = l_run_schedule(time,cal,letter,handles,FREQ,DUTY,SR,gain,r
         
         
         for ch=1:size(handles.CHANNEL.ch_serial,2)
+            
             if nargin>11
             index=strfind(ch_num',num2str(handles.CHANNEL.ch_info{1,ch}.ChNb));
             if strcmp(tbl_content{index,1},'Off'); continue;end
