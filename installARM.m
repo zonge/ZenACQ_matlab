@@ -100,9 +100,8 @@ end
 close(progress);
 
 if connected_ch~=size(COM,1)
-    disp('hello')
     beep
-    set(handles.upgrade_msg,'String','The firmware was not installed, Please try again.');
+    set(handles.upgrade_msg,'String','The firmware was not installed properly, Please try again.');
     beep
     return;
 end

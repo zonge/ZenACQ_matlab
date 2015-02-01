@@ -27,16 +27,16 @@ min_str=get(handles.min_box,'String');
 if isempty(min_str);Min=0;else Min=str2double(min_str);end
 sec_str=get(handles.sec_box,'String');
 if isempty(sec_str);sec=0;else sec=str2double(sec_str);end
-duration=day*86400+hour*3600+Min*60+sec;
-if isnan(duration)
+DuratioN=day*86400+hour*3600+Min*60+sec;
+if isnan(DuratioN)
     beep
    set(handles.error_display,'Visible','on','String',language.ZenSCH_err5)
    return;
-elseif duration==0
+elseif DuratioN==0
     beep
    set(handles.error_display,'Visible','on','String',language.ZenSCH_err6)
    return;
-elseif duration<20
+elseif DuratioN<20
     beep
    set(handles.error_display,'Visible','on','String','The minimum length is : 20 sec')
    return;
@@ -44,7 +44,7 @@ else
    set(handles.error_display,'Visible','off') 
 end
 
-elseif survey_type==2 && handles.main.type==1
+elseif (survey_type==2 || survey_type==3) && handles.main.type==1
     
 tx_freq_value = get(handles.tx_freq_popup,'Value');
 tx_freq_str = get(handles.tx_freq_popup,'String');
@@ -55,7 +55,7 @@ nb_cycles_str = get(handles.nb_cycles_popup,'String');
 nb_cycle=str2double(nb_cycles_str(nb_cycles_value));
 TX_freq=str2double((strrep(tx_freq_str2{1,1}, 'Hz', '')));
 
-duration=nb_cycle/TX_freq;
+DuratioN=nb_cycle/TX_freq;
 end
 
 % Increment the number of schedule.
@@ -64,13 +64,13 @@ nb_schedule=nb_schedule+1;
 
 if nb_schedule>16
     beep
-    set(handles.error_display,'Visible','on','String',language.ZenSCH_err6)
+    set(handles.error_display,'Visible','on','String',language.ZenSCH_err7)
     return;
 end
 if handles.main.type==0 % RX
-    handles.SCHEDULE(nb_schedule,1)=schedule(duration,sr,gain);    
+    handles.SCHEDULE(nb_schedule,1)=schedule(DuratioN,sr,gain);    
 elseif handles.main.type==1 % TX
-    handles.SCHEDULE(nb_schedule,1)=schedule(duration,sr,gain,TX_freq);  % CREATE OBJS
+    handles.SCHEDULE(nb_schedule,1)=schedule(DuratioN,sr,gain,TX_freq);  % CREATE OBJS
 end
 
 l_sch_set_table( handles,nb_schedule );  % UPDATE TABLE

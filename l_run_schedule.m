@@ -47,16 +47,21 @@ function [ run_in ] = l_run_schedule(time,cal,letter,handles,FREQ,DUTY,SR,gain,r
         if DUTY==0;duty=0;end
         if FREQ(schedule)==0;period=0;end
         
-        
         for ch=1:size(handles.CHANNEL.ch_serial,2)
             
             if nargin>11
-            index=strfind(ch_num',num2str(handles.CHANNEL.ch_info{1,ch}.ChNb));
-            if strcmp(tbl_content{index,1},'Off'); continue;end
+                index=strfind(ch_num',num2str(handles.CHANNEL.ch_info{1,ch}.ChNb));
+                if strcmp(tbl_content{index,1},'Off'); continue;end
             end
+            
+            %channel_number_str='';
+            %if cal==false
+            %    channel_number_str=sprintf('%02d',handles.CHANNEL.ch_info{1,ch}.ChNb);
+            %end
             
             file_name=[sprintf('%.2d',schedule) letter '.z3d'];
             l_run_schedule_low(handles.CHANNEL.ch_serial{ch},file_name,time,run_in,run_for(schedule),SR(schedule),gain(schedule),period,duty);
+            
         end
         
         pourcentage=[sprintf('%0.2f',(schedule/max_schedule)*100) ' %'];

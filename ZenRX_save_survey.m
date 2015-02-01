@@ -6,7 +6,7 @@ function [ handles ] = ZenRX_save_survey( handles,geometry_tbl,survey)
 % Oct 10, 2014
 
 name_geo=get(handles.design_popup,'String');
-if strcmp(name_geo,'No Survey Design found')
+if strcmp(name_geo,'No Survey Layout found')
     default_ans{1,1}='';
 else
     default_ans{1,1}=name_geo{1,1};
@@ -14,7 +14,7 @@ end
 
 geo_name = inputdlg('Survey Design name :','Survey Design',1,default_ans);
 if isempty(geo_name);return;end
-folder='design';
+folder=handles.main.layout_folder;
 if ~exist(folder,'dir');mkdir(folder);end
 
 if handles.main.type==0 % RX

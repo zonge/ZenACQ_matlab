@@ -3,9 +3,7 @@ function delete_files(left_bar,bottom_bar,width_bar,height_bar,EXTENSION)
 
 
 % get the list of current drives
-import java.io.*;
-f=File('');
-r=f.listRoots;
+import java.io.*;f=File('');r=f.listRoots;
 
 % INTIATE PROGRESS BAR
 progress = waitbar(0,'DELETE ','Name',['Delete ' EXTENSION] ...

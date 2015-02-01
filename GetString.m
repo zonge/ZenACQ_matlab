@@ -28,6 +28,7 @@ s=strjoin(d');
 s(s==' ')=[];
 data.Query{1,1}=deblank(s);
 
+%disp(data.Query)
 
 x = strfind(data.Query,Lookup);
 z=find(~cellfun(@isempty,x),1);        % Cell index

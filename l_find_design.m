@@ -3,12 +3,12 @@ function [ main_file ] = l_find_design( handles )
 main_file=[];
 
 if handles.main.type==1 % TX
-file_dir=dir(['design' filesep '*.TXgeo']);    
+file_dir=dir([handles.main.layout_folder filesep '*.TXgeo']);    
 elseif handles.main.type==0 % RX
-file_dir=dir(['design' filesep '*.RXgeo']);
+file_dir=dir([handles.main.layout_folder filesep '*.RXgeo']);
 end
 if isempty(file_dir)
-    set(handles.design_popup,'String','No Survey Design found')
+    set(handles.design_popup,'String','No Survey Layout found')
 else
     Files=cell(size(file_dir,1),1);
     if strcmp(handles.SCH.last_design,'$Rx_geometry_selected')
@@ -43,9 +43,9 @@ else
         end          
     end  
     if handles.main.type==1 % TX
-        main_file=['design' filesep Files{1,1} '.TXgeo'];   
+        main_file=[handles.main.layout_folder filesep Files{1,1} '.TXgeo'];   
     elseif handles.main.type==0 % RX
-        main_file=['design' filesep Files{1,1} '.RXgeo'];
+        main_file=[handles.main.layout_folder filesep Files{1,1} '.RXgeo'];
     end
     
 end

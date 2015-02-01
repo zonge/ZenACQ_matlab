@@ -9,9 +9,9 @@ end
 survey_type=str2double(handles.setting.ZenACQ_mode);
 if survey_type==1
     EXT='MTsch';
-elseif survey_type==2 && handles.main.type==0
+elseif (survey_type==2 || survey_type==3) && handles.main.type==0
     EXT='IPsch';
-elseif survey_type==2 && handles.main.type==1
+elseif (survey_type==2 || survey_type==3) && handles.main.type==1
     EXT='TXsch';
 end
 

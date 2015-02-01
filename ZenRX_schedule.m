@@ -11,10 +11,6 @@ ZenACQ_vars.language=handles.language;
 setappdata(0,'tunnel',ZenACQ_vars);                % SET GLOBAL VARIABLE
 setappdata(0,'tunnel2',edit_file);                 % SET GLOBAL VARIABLE
 
-
-
-
-
  w=ZenSCH;
 
 if exist('handles.jPanel','class'); handles.jPanel.setVisible(false);end
@@ -29,6 +25,7 @@ main_file=l_find_schedule( handles );
 if ~isempty(main_file)
 handles.SCHEDULE = m_get_sch_obj( main_file,handles,true );
 set(handles.quick_summary_str,'String',handles.SCHEDULE.SUMMARY);
+set(handles.quick_summary_str,'Value',handles.SCHEDULE.TOTAL_TIME);
 set(handles.schedule_popup,'Value',1);
 end
 

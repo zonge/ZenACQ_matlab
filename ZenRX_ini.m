@@ -1,4 +1,4 @@
-function  handles = ZenRX_ini(handles)
+    function handles = ZenRX_ini(handles)
 
 % GET PARAMETERS FROM ZenACQ
 ZenACQ_vars=getappdata(0,'tunnel');
@@ -45,6 +45,9 @@ set(handles.s_space_str,'String',handles.language.s_space_str)
 set(handles.z_positive_str,'String',handles.language.z_positive_str)
 set(handles.save_push,'String',handles.language.save_push_str)
 set(handles.check_setup,'String',handles.language.check_setup_str)
+set(handles.display_survey,'String',handles.language.display_survey_str)
+set(handles.display_real_time,'String',handles.language.display_real_time_str)
+
 
 set(handles.set_up,'String',handles.language.set_up_str)
 set(handles.version_txt,'String',handles.language.version_str)
@@ -55,6 +58,7 @@ set(handles.status_volts,'String',handles.language.status_volts_str)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SERIAL CONNECTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 [ handles,CH1_index,status ] = connection_process( handles );
 
 if status==0
@@ -77,18 +81,33 @@ if status==0
     end
     
 else
+    
+     set(handles.general_info_panel,'Visible','off')
+     set(handles.schedule_panel,'Visible','off')
+     set(handles.survey_panel,'Visible','off')
+     set(handles.set_up,'Visible','off')
+     set(handles.box_str,'Visible','off')
+     set(handles.box_str_val,'Visible','off')
+     set(handles.status_channel,'Visible','off')
+     set(handles.status_channel_val,'Visible','off')
+     set(handles.logo,'Visible','off')
+     set(handles.local_time_val,'Visible','off')
+     set(handles.status_sats,'Visible','off')
+     set(handles.status_sats_val,'Visible','off')
+     set(handles.status_sync,'Visible','off')
+     set(handles.status_sync_val,'Visible','off')
+     set(handles.version_txt,'Visible','off')
+     set(handles.status_volts,'Visible','off')
+     set(handles.board_cal_status,'Visible','off')
+     set(handles.board_cal_str,'Visible','off')
+     set(handles.antenna_cal_status,'Visible','off')
+     set(handles.antenna_cal_str,'Visible','off')
+     set(handles.error_msg,'String','ERROR. PLEASE RESTART')
+    
     return;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% RX TIMER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-A.pass=handles;
-handles.timer_RX = timer('TimerFcn',@timer_RX,'BusyMode','queue','UserData'...
-                                  ,A,'ExecutionMode','fixedRate','Period',1.0,'Name','Rx_timer');
-start(handles.timer_RX);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -126,6 +145,7 @@ handles.SCHEDULE.TOTAL_TIME=0;
 if ~isempty(main_file)
     handles.SCHEDULE = m_get_sch_obj( main_file,handles,true );
     set(handles.quick_summary_str,'String',handles.SCHEDULE.SUMMARY);
+    set(handles.quick_summary_str,'Value',handles.SCHEDULE.TOTAL_TIME);
 end
 
 % SET SCHEDULE START TIME
@@ -141,6 +161,8 @@ t=addtodate(date_now_val2,handles.SCHEDULE.TOTAL_TIME+handles.main.extra_time, '
 end_acq_str=datestr(t,'dd-mmm-yyyy , HH:MM:SS');
 set(handles.end_time_str,'String',end_acq_str);
 handles.start_time=date_now_val2;
+handles.late=false;
+handles.official_start_time=0;
 
 if handles.main.type==1 % TX
     set(handles.start_time_str,'Visible','off')
@@ -149,6 +171,8 @@ if handles.main.type==1 % TX
     set(handles.min_popup,'Visible','off')
     set(handles.end_time_str0,'Visible','off')
     set(handles.end_time_str,'Visible','off')
+    set(handles.star_1,'Visible','off')
+    set(handles.late_option,'Visible','off')
     set(handles.set_up,'Visible','off','String',handles.language.set_up_transmit_str)
 end
 
@@ -160,9 +184,9 @@ end
 survey_type=str2double(handles.setting.ZenACQ_mode);
 if handles.main.type==0
     handles.SCH.last_design=handles.setting.Rx_geometry_selected_MT;
-elseif handles.main.type==0 && survey_type==2
+elseif handles.main.type==0 && (survey_type==2 || survey_type==3)
     handles.SCH.last_design=handles.setting.Rx_geometry_selected_IP_RX; 
-elseif handles.main.type==1 && survey_type==2
+elseif handles.main.type==1 && (survey_type==2 || survey_type==3)
     handles.SCH.last_design=handles.setting.Rx_geometry_selected_IP_TX;
 end
 
@@ -182,23 +206,31 @@ A_space=str2double(get(handles.a_space_box,'String'));
 S_space=str2double(get(handles.s_space_box,'String'));  
 SX_azimuth=str2double(get(handles.SX_azimut_box,'String'));
 z_positive=get(handles.z_positive,'Value');
+handles.prev_SX_azimuth=SX_azimuth;
+handles.z_prev=z_positive;
+for i=1:size(DATA,1)
+handles.ant_raw_val{i,:}=[z_positive,SX_azimuth,DATA(i,7)];
+end
 ZenUTM.X=0;  % initiate
 ZenUTM.Y=0;  % initiate
 
+% Initiate Layout display status
+global tequila_status
+tequila_status=false;
 
 % Initiate CRES
-    for i=1:size(handles.CHANNEL.ch_info,2)
-        handles.CRES_values{i}=0;
-    end
+%     for i=1:size(handles.CHANNEL.ch_info,2)
+%         handles.CRES_values{i}=0;
+%     end
 
-if handles.main.type==1 % TX
-set(handles.check_setup,'Visible','off')
-set(handles.z_positive_str,'Visible','off')
-set(handles.z_positive,'Visible','off')
-set(handles.utm_zone_str,'Visible','off')
-set(handles.altitude_str,'Visible','off')
-set(handles.altitude_str,'Visible','off')
-end
+% if handles.main.type==1 % TX
+% set(handles.check_setup,'Visible','off')
+% set(handles.z_positive_str,'Visible','off')
+% set(handles.z_positive,'Visible','off')
+% set(handles.utm_zone_str,'Visible','off')
+% set(handles.altitude_str,'Visible','off')
+% set(handles.altitude_str,'Visible','off')
+% end
 
 handles=update_table( handles,DATA,UTM_toggle,A_space,S_space,SX_azimuth,z_positive,ZenUTM );
 
@@ -209,5 +241,53 @@ rgb = imread('Zonge_Int_logo_color.jpg');
 axes(handles.logo)
 image(rgb);
 axis off;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CHECK CALS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% CHECK BOARD CAL
+zen_box=str2double(get(handles.box_str_val,'String'));
+filename=['calibrate/ZEN' num2str(zen_box) '.cal'];
+if exist(filename,'file')~=2  % if file does not exist
+      set(handles.board_cal_status,'ForegroundColor','red','TooltipString',['Not found :' filename])
+      set(handles.board_cal_str,'TooltipString',['Not found :' filename])
+else  % If file exist
+      set(handles.board_cal_status,'ForegroundColor','green','TooltipString',['Found :' filename])
+      set(handles.board_cal_str,'TooltipString',['Found :' filename])
+end
+
+
+% CHECK ANTENNA CAL
+filename =['calibrate\' handles.main.calibrate_file_name];        
+if exist(filename,'file')~=2 % IF FILE DOESNT EXIST
+    set(handles.antenna_cal_status,'ForegroundColor','red','TooltipString',['Not found :' filename])
+    set(handles.antenna_cal_str,'TooltipString',['Not found :' filename])
+else % IF FILE EXIST
+    set(handles.antenna_cal_status,'ForegroundColor','green','TooltipString',['Found :' filename])
+    set(handles.antenna_cal_str,'TooltipString',['Found :' filename])
+end
+
+% CHECK TX CAL
+if handles.main.type==1 % TX
+    set(handles.tx_cal_str,'Visible','on')
+    set(handles.tx_cal_status,'Visible','on')
+    filename =['calibrate\' handles.main.TX_cal_file_name];        
+if exist(filename,'file')~=2 % IF FILE DOESNT EXIST
+    set(handles.tx_cal_status,'ForegroundColor','red','TooltipString',['Not found :' filename])
+    set(handles.tx_cal_str,'TooltipString',['Not found :' filename])
+else % IF FILE EXIST
+    set(handles.tx_cal_status,'ForegroundColor','green','TooltipString',['Found :' filename])
+    set(handles.tx_cal_str,'TooltipString',['Found :' filename])
+end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% RX TIMER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+A.pass=handles;
+handles.timer_RX = timer('TimerFcn',@timer_RX,'BusyMode','queue','UserData'...
+                                  ,A,'ExecutionMode','fixedRate','Period',1.0,'Name','Rx_timer');
+start(handles.timer_RX);
 
 end

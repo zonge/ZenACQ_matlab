@@ -1,5 +1,10 @@
-function raw_data_dir=copy_files(left_bar,bottom_bar,width_bar,height_bar,path_output,EXTENSION)
+function raw_data_dir=copy_files(left_bar,bottom_bar,width_bar,height_bar,path_output,EXTENSION,no_cal_file)
 %Copy Z3D files from SD cards to an OUTPUT define path
+
+if nargin==6
+no_cal_file=false;
+end
+
 raw_data_dir='empty';
 
 % PARAMETER
@@ -32,6 +37,7 @@ progress = waitbar(0,'COPY Z3DS...','Name','Copy Z3Ds' ...
 total_files=0;
 for i=1:numel(r)   
      list=dir_fixed([char(r(i)) EXTENSION]);
+     %list=dir([char(r(i)) EXTENSION]);
      if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
          for j=1:size(list,1)
           if list(j).bytes>MIN_SIZE && ~strcmp(list(j).name(1:3),'ZEN')
@@ -43,11 +49,19 @@ end
 % MAIN LOOP
 file_nb=0;
 for i=1:numel(r)
-     
-     list=dir_fixed([char(r(i)) EXTENSION]);  
+     list=dir_fixed([char(r(i)) EXTENSION]);
+     %list=dir([char(r(i)) EXTENSION]);  
      if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
          for j=1:size(list,1)
           if list(j).bytes>MIN_SIZE && ~strcmp(list(j).name(1:3),'ZEN')
+              
+              % Skip calibration file if not a calibration
+              if no_cal_file==false
+                  if strcmp(list(j).name(end-8:end),'_HCAL.Z3D') || strcmp(list(j).name(end-8:end),'_MCAL.Z3D') || strcmp(list(j).name(end-8:end),'_LCAL.Z3D')
+                      continue
+                  end
+              end
+              
               file_nb=file_nb+1;
               
               % SOURCE
@@ -76,7 +90,8 @@ for i=1:numel(r)
               if ~exist(date_dir,'dir');mkdir(date_dir);end
               if ~exist(time_dir,'dir');mkdir(time_dir);end
               if ~exist(raw_data_dir,'dir');mkdir(raw_data_dir);end
-              if ~exist(folder_dir,'dir');mkdir(folder_dir);end   
+              if ~exist(folder_dir,'dir');mkdir(folder_dir);end  
+              
               % Copy files
               destination=folder_dir;
               copyfile(source,destination,'f'); 
@@ -88,6 +103,16 @@ for i=1:numel(r)
           end
          
      end
+end
+
+if nargin==6 && file_nb>0
+    attach_folder='attachment';
+    list=dir(attach_folder);
+    isfile=~[list.isdir];
+    filenames={list(isfile).name};
+    for i=1:size(filenames,2)
+        copyfile([attach_folder filesep filenames{1,i} ],time_dir,'f'); 
+    end
 end
 
 close(progress);

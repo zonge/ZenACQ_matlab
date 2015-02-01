@@ -68,6 +68,8 @@ file_content=l_get_file_content( ext );
     keys.job_by_str=l_search_key('$job_by_str',file_content,ext);
     keys.job_for_str=l_search_key('$job_for_str',file_content,ext);
     keys.operator_str=l_search_key('$operator_str',file_content,ext);
+    keys.error_msg_info_panel=l_search_key('$error_msg_info_panel',file_content,ext);
+    
     
     keys.schedule_panel_str=l_search_key('$schedule_panel_str',file_content,ext);
     keys.new_push_str=l_search_key('$new_push_str',file_content,ext);
@@ -85,15 +87,19 @@ file_content=l_get_file_content( ext );
     keys.z_positive_str=l_search_key('$z_positive_str',file_content,ext);
     keys.save_push_str=l_search_key('$save_push_str',file_content,ext);
     keys.check_setup_str=l_search_key('$check_setup_str',file_content,ext);
+    keys.display_survey_str=l_search_key('$display_survey_str',file_content,ext);
+    keys.display_real_time_str=l_search_key('$display_real_time_str',file_content,ext);
 
     keys.set_up_str=l_search_key('$set_up_str',file_content,ext);
     keys.set_up_transmit_str=l_search_key('$set_up_transmit_str',file_content,ext);
+    keys.set_up_transmit_str2=l_search_key('$set_up_transmit_str2',file_content,ext);
     keys.version_str=l_search_key('$version_str',file_content,ext);
     keys.gps_time_str=l_search_key('$gps_time_str',file_content,ext);
     keys.status_volts_str=l_search_key('$status_volts_str',file_content,ext);
     keys.zen_zone_str=l_search_key('$zen_zone_str',file_content,ext);
     keys.zen_altitude=l_search_key('$zen_altitude',file_content,ext);
     keys.transmit_msg=l_search_key('$transmit_msg',file_content,ext);
+    keys.transmit_popup_msg=l_search_key('$transmit_popup_msg',file_content,ext);
     
     
     % ZENRX timer

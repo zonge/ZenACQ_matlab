@@ -1,4 +1,6 @@
 function [ com ] = findCOM()
+% Function that return available COM ports in Windows.
+
 try
 devices=winqueryreg('name', 'HKEY_LOCAL_MACHINE', 'HARDWARE\DEVICEMAP\SERIALCOMM');
 catch

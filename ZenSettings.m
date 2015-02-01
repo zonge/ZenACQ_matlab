@@ -1,13 +1,13 @@
-function varargout = ZenPREF(varargin)
-% ZENPREF MATLAB code for ZenPREF.fig
+function varargout = ZenSettings(varargin)
+% ZENSETTINGS MATLAB code for zensettings.fig
 
-% Last Modified by GUIDE v2.5 20-Oct-2014 08:56:56
+% Last Modified by GUIDE v2.5 23-Jan-2015 15:28:12
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ZenPREF_OpeningFcn, ...
-                   'gui_OutputFcn',  @ZenPREF_OutputFcn, ...
+                   'gui_OpeningFcn', @ZenSettings_OpeningFcn, ...
+                   'gui_OutputFcn',  @ZenSettings_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -22,11 +22,11 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% --- Executes just before ZenPREF is made visible --- %%%%%%%%%%%%%%%%%%%%%
+% --- Executes just before zensettings is made visible --- %%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ZenPREF_OpeningFcn(hObject, ~, handles, varargin)
+function ZenSettings_OpeningFcn(hObject, ~, handles, varargin)
 
-% Choose default command line output for ZenPREF
+% Choose default command line output for zensettings
 handles.output = 'Yes';
 
 % GET PARAMETERS FROM ZenACQ
@@ -54,8 +54,8 @@ set(handles.save_push,'String',handles.language.save_push_str)
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes ZenPREF wait for user response (see UIRESUME)
-uiwait(handles.figure1);
+% UIWAIT makes zensettings wait for user response (see UIRESUME)
+uiwait(handles.ZenSettings);
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % GET FOLDER LOCATION  ++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -104,13 +104,13 @@ l_modif_file( handles.main.Setting_ext,'$ZenACQ_mode',num2str(ZenACQ_mode_popup)
 guidata(hObject, handles);
 
 % Get the updated handles structure.
-uiresume(handles.figure1);
+uiresume(handles.ZenSettings);
 
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % ACTION WHEN GUI IS CLOSING ++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function figure1_CloseRequestFcn(hObject, ~, ~)
+function ZenSettings_CloseRequestFcn(hObject, ~, ~)
 
 if isequal(get(hObject, 'waitstatus'), 'waiting')
     % The GUI is still in UIWAIT, us UIRESUME
@@ -124,7 +124,7 @@ end
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % ACTION WHEN A KEYPRESS ++++++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function figure1_KeyPressFcn(hObject, ~, handles)
+function ZenSettings_KeyPressFcn(hObject, ~, handles)
 
 % Check for "enter" or "escape"
 if isequal(get(hObject,'CurrentKey'),'escape')
@@ -134,22 +134,22 @@ if isequal(get(hObject,'CurrentKey'),'escape')
     % Update handles structure
     guidata(hObject, handles);
     
-    uiresume(handles.figure1);
+    uiresume(handles.ZenSettings);
 end    
     
 if isequal(get(hObject,'CurrentKey'),'return')
-    uiresume(handles.figure1);
+    uiresume(handles.ZenSettings);
 end    
 
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % GENERATE OUTPUT TO CMD ++++++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function varargout = ZenPREF_OutputFcn(~, ~, handles)
+function varargout = ZenSettings_OutputFcn(~, ~, handles)
 varargout{1} = handles.output;
 
 % The figure can be deleted now
-delete(handles.figure1);
+delete(handles.ZenSettings);
 
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

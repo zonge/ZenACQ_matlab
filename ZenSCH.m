@@ -42,8 +42,11 @@ survey_type=str2double(handles.setting.ZenACQ_mode);
 if survey_type==2
     set(handles.SR_popup,'String',{'Mid Band'},'Visible','off')
     set(handles.sample_rate_str,'Visible','off')
+elseif survey_type==3
+    set(handles.SR_popup,'String',{'Mid Band'},'Visible','off')
+    set(handles.sample_rate_str,'Visible','off')
 end
-handles.main.type
+
 if handles.main.type==0  % RX
     set(handles.tx_freq_str,'Visible','off')
     set(handles.tx_freq_popup,'Visible','off')
@@ -315,9 +318,9 @@ if ~exist(folder,'dir');mkdir(folder);end
 survey_type=str2double(handles.setting.ZenACQ_mode);
 if survey_type==1 && handles.main.type==0
     file_name=[folder filesep Sch_name '.MTsch'];
-elseif survey_type==2 && handles.main.type==0
+elseif (survey_type==2 || survey_type==3) && handles.main.type==0
     file_name=[folder filesep Sch_name '.IPsch'];
-elseif survey_type==2 && handles.main.type==1
+elseif (survey_type==2 || survey_type==3) && handles.main.type==1
     file_name=[folder filesep Sch_name '.TXsch'];
 end
 

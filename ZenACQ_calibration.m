@@ -5,12 +5,36 @@ function [ handles ] = ZenACQ_calibration( handles )
 % Created by Marc Benoit
 % Oct 10, 2014
 
+% CONFIRMATION
+choice = questdlg({'You are about to start a calibration.'; 'Please select the type of calibration'} , ...
+'System Calibration', ...
+'Internal','External','Cancel','Internal');
+
+
+if strcmp(choice,'Internal')
+    cal_type='ff';
+    cal_name='ISys';
+elseif strcmp(choice,'External')
+    cal_type='00';
+    cal_name='ESys';
+else
+    return;
+end
+
 set(handles.msg_txt,'Visible','off')
 
 %% CONNECT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [ handles,CH1_index,status ] = connection_process( handles );
 
 if status==0;handles.CH1_index=CH1_index;else return;end
+
+%% GET VOLTAGE / TEMPERATURE
+try
+    [Voltage,Temperature]=volt_temp_process(handles,CH1_index);
+catch
+    Voltage='0';
+    Temperature='0';
+end
 
 %% SET MUX | CLEAR METADATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -24,6 +48,7 @@ for ch=1:size(handles.CHANNEL.ch_serial,2)
 end 
 
 close(progress)
+
 
 %% WAIT FOR SYNC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -49,7 +74,7 @@ while sync<1
             end
         end
             data_raw(end:end);
-            data(ch)=data_raw(end:end);
+            data(handles.CHANNEL.ch_info{1,ch}.ChNb)=data_raw(end:end);
     end
 
     if isempty(strfind(data,'N'));sync=1; end
@@ -78,7 +103,7 @@ start_time=datestr(time_GPS_dec,'yyyy-mm-dd,HH:MM:SS');
 QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},'calvoltage 0.5',10,'Voltageto:',';');
     
 % CAL channel
-QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},'calchannels 0xff',10,'maskiscurrentlysetto:0x','.');
+QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},['calchannels 0x' cal_type],10,'maskiscurrentlysetto:0x','.');
 
 
 %% COLLECT CALLIBRATION 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -238,13 +263,36 @@ end
 % CHECK THAT ALL SDs APPEARED
 l_SDavailable2( handles,NbD_b_UMASS,COM_Nb );
 
-pause(2)
+
+% WAIT
+h = waitbar(0,'Please wait...');
+steps = 5;
+for step = 1:steps
+    pause(1)
+    waitbar(step / steps)
+end 
+
+ EXT='*CAL.Z3D';
+
+% CHECK IF THE COPY FUNCTION CAN SEE ALL DRIVES
+drive=0;
+while drive<NbD_b_UMASS
+import java.io.*;f=File('');r=f.listRoots;drive=0;
+for i=1:numel(r)   
+     list=dir_fixed([char(r(i)) EXT]);
+     if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
+        drive=drive+1;
+     end
+end
+end
+close(h)
+
 %% Copy files
-        EXT='*CAL.Z3D';
+       
         folder=['calibrate' filesep 'temp'];
         if ~exist(folder,'dir');mkdir(folder);end
         dir_path=copy_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
-            handles.main.GUI.width_bar,handles.main.GUI.height_bar,folder,EXT);
+            handles.main.GUI.width_bar,handles.main.GUI.height_bar,folder,EXT,true);
         if strcmp(dir_path,'empty')
             warndlg('No z3D files found','Copy Z3Ds')
             return;
@@ -257,8 +305,8 @@ pause(2)
 %% DELETE SERIAL OBJ
 newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);end
 
-%% ANALYSE CALIBRATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%dir_path='C:\ZenACQ_matlab\calibrate\temp\2014-11-02\14_05_marc.benoit_ZEN1\ZenRawData';
+% ANALYSE CALIBRATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%dir_path='C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ\calibrate\temp\2015-01-21\10_26_Marc.Benoit_ZEN1\ZenRawData';
 
 error=false;
 DATA=data_upload(dir_path,handles);
@@ -425,7 +473,7 @@ TS=zeros(pts_stack,chn);
   subplot(3,1,3)
   semilogx(f,MAG)
   pause(0.8)
-  saveas(figure(5+sch),['calibrate/fig' num2str(5+sch)], 'jpg')
+  saveas(figure(5+sch),[dir_path filesep 'fig' num2str(5+sch)], 'jpg')
   close(figure(5+sch))
 end
 
@@ -434,7 +482,7 @@ end
 % % %load('DATA.mat')
 time=now;
 if ~exist('calibrate','dir');mkdir('calibrate');end
-file_name=['calibrate/ZEN' num2str(DATA(1,1).Box_id) '.cal'];
+file_name=['calibrate/zen' num2str(DATA(1,1).Box_id) '.cal'];
 fid = fopen(file_name,'w');
 
 
@@ -443,9 +491,9 @@ line1='$GDP.TYPE,Zen';
 line2='$GDP.PROGVER,ZenACQ';
 line3=['$GDP.DATE,' datestr(time,'mm/dd/yyyy')];
 line4=['$GDP.TIME,' datestr(time,'HH:MM:SS')];
-line5='$GDP.BAT,12.6';
-line6='$GDP.TEMP,33.25';
-line8='$GDP.SIGSOURCE,ISys';
+line5=['$GDP.BAT,' Voltage];
+line6=['$GDP.TEMP,' Temperature];
+line8=['$GDP.SIGSOURCE,' cal_name];
 line9='$GDP.CALVOLTS,1.000';
 line10='$CAL.VER,025';
 line11='$CAL.LABEL,CARDSNX,HDWKEY,CALFREQ,ADFREQ,G0,ATTEN,MAG1,PHASE1,MAG3,PHASE3,MAG5,PHASE5,MAG7,PHASE7,MAG9,PHASE9';

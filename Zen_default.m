@@ -65,7 +65,7 @@ for i=1:connected_ch
     try
         waitln(C.ch_serial{i},'GlobalSave():Complete','SAVE PARAMETERS',10);
     catch error_c
-         msgbox(['Error trying to read the header | Error msg: ' error_c.message ]);
+         msgbox(['Error trying to save | Error msg: ' error_c.message ]);
     end
       
     pourcentage=[sprintf('%0.2f',(i/connected_ch)*100) ' %'];

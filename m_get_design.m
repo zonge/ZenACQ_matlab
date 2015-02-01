@@ -8,7 +8,7 @@ function [handles] = m_get_design( main_file,handles,display_msg )
 
     % FIND KEY WORDS AND DEFINE OBJECT !
     max_rows=size(handles.CHANNEL.ch_info,2);
-    tbl_content=cell(max_rows,10);
+    tbl_content=cell(max_rows,9);
     
      % FIND CHANNEL #
      ch_num=zeros(max_rows,1);
@@ -64,7 +64,9 @@ file_content=l_get_file_content( main_file,handles,display_msg );
     if strcmp(key_Line,'$geometryXstn')
         set(handles.Xstn_box,'String','')    
     else
-        set(handles.Xstn_box,'String',key_Line)
+        % set(handles.Xstn_box,'String',key_Line) WE want the user to be
+        % force to enter a station every time
+        set(handles.Xstn_box,'String','')
     end
 
     key_Line=l_search_key('$geometryYstn',file_content,main_file);

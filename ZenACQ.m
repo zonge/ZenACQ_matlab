@@ -2,7 +2,7 @@ function varargout = ZenACQ(varargin)
 % ZENACQ MATLAB code for ZenACQ.fig
 %      ZENACQ, Acquisition Interface for ZenBox
 
-% Last Modified by GUIDE v2.5 06-Nov-2014 12:53:07
+% Last Modified by GUIDE v2.5 21-Jan-2015 12:37:00
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -42,6 +42,7 @@ guidata(hObject, handles);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function receiver_Callback(~, ~, handles)
 
+
 % DELETE EXISTING OPEN SERIAL PORTS
 newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
 
@@ -63,6 +64,7 @@ else
 end
                      
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  2. TRANSMITER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,8 +84,7 @@ setappdata(0,'tunnel',ZenAQC_vars);
 % UPDATE COM AVAILABLE
 COM=findCOM;
 if ~strcmp('NONE',COM{1,1})
-    % RUN ZenTX
-    ZenRX;
+    ZenRX; % RUN ZenTX
 else
     warndlg(handles.language.ZenACQ_err1,'ZenACQ');
 end
@@ -111,21 +112,30 @@ ZenAQC_vars.language=handles.language;
 setappdata(0,'tunnel',ZenAQC_vars);
 
 % RUN ZEN PREF
-ZenPREF
+ZenSettings
 
 % UPDATE GUI AND PARAMETERS
-handles.ZenACQsetting = m_get_setting_key(handles.main.Setting_ext,handles,true);
+handles.setting = m_get_setting_key(handles.main.Setting_ext,handles,true);
 
-if str2double(handles.ZenACQsetting.ZenACQ_mode)==2 % IF TX MODE
-    set(handles.receiver,'Position',[5.6 30.538 44.4 5.692]);
-    set(handles.transmitter,'Visible','on','Position',[5.6 24.5 44.4 5.692])
-else                                          % IF NOT TX MODE
+if str2double(handles.setting.ZenACQ_mode)==1   % IF NOT RX MODE
     set(handles.receiver,'Position',[5.6 27 44.4 9.231]);
     set(handles.transmitter,'Visible','off','Position',[5.6 23.692 44.4 2.538])
+else                                            % IF TX MODE
+    set(handles.receiver,'Position',[5.6 30.538 44.4 5.692]);
+    set(handles.transmitter,'Visible','on','Position',[5.6 24.5 44.4 5.692])
+    % SET DUTY
+    if str2double(handles.setting.ZenACQ_mode)==2
+        handles.main.duty_cycle=100;
+    elseif str2double(handles.setting.ZenACQ_mode)==3
+        handles.main.duty_cycle=50;
+    end
 end
 
 % Update handles structure
 guidata(hObject, handles);
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  5. DATA TRANSFER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -144,6 +154,40 @@ handles.ZenACQsetting = m_get_setting_key(handles.main.Setting_ext,handles,true)
 guidata(hObject, handles);
 
 
+function copy_sds_Callback(~, ~, handles)
+
+EXTENSION='*.Z3D';
+handles.path_output=handles.setting.z3d_location;
+[ ~,dir_path ] = data_transfert( handles,EXTENSION );
+
+% open the folder containing data
+if ~strcmp(dir_path,'empty')
+winopen(fileparts(dir_path))
+end
+
+
+function delete_sds_Callback(~, ~, handles)
+
+EXTENSION='*.Z3D';
+
+choice2 = questdlg(handles.language.data_transfer_msg3, ...
+                handles.language.progress_title6, ...
+                handles.language.yes,handles.language.no,handles.language.no);
+            
+waitfor(choice2)
+            
+switch choice2
+    case handles.language.yes
+        delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
+        handles.main.GUI.width_bar,handles.main.GUI.height_bar,EXTENSION)  
+    case handles.language.no
+        return;
+end
+
+delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
+handles.main.GUI.width_bar,handles.main.GUI.height_bar,'*.CSV')  
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  6. OPTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -159,7 +203,11 @@ ZenAQC_vars.language=handles.language;
 setappdata(0,'tunnel',ZenAQC_vars);
 
 % RUN ZenOptions
-ZenOptions
+w=ZenOptions;
+uiwait(w);
+
+ZenACQ_vars=getappdata(0,'tunnelback');
+set(handles.msg_txt,'Visible','on','Value',ZenACQ_vars.sd_mod_active)
 
 
 

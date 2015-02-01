@@ -28,18 +28,19 @@ $job_number_str = JOB # :
 $job_by_str = JOB BY :
 $job_for_str = JOB FOR :
 $operator_str = OPERATOR :
+$error_msg_info_panel = must be smaller than 32 characters
 
 //SCHEDULE PANEL
 $schedule_panel_str = Schedule
 $new_push_str = New Schedule
 $edit_push_str = Edit
-$start_time_str = START
-$end_time_str = END
+$start_time_str = START :
+$end_time_str = END :
 $data_push_str = today
 
 //GEOMETRY PANEL
-$survey_panel_str = Survey
-$stn_str = ZEN STN :
+$survey_panel_str = Layout
+$stn_str = RX STN :
 $line_str = LINE NAME :
 $SX_azimuth_str = X AZIMUTH :
 $a_space_str = A-Space :
@@ -47,6 +48,8 @@ $s_space_str = S-Space :
 $z_positive_str = Z positive :
 $save_push_str = Save
 $check_setup_str = CHECK SETUP
+$display_survey_str = SHOW LAYOUT
+$display_real_time_str = REAL TIME
 
 //OTHERS
 $box_str = BOX #
@@ -55,12 +58,15 @@ $status_sats_str = SATELLITES :
 $status_sync_str = SYNC :
 $set_up_str = COMMIT
 $set_up_transmit_str = TRANSMIT
+$set_up_transmit_str = STOP
 $version_str = version :
 $gps_time_str = Time dif :
 $status_volts_str = VOLTAGE :
-$zen_zone_str = Zen Zone :
-$zen_altitude = Zen Altitude :
+$zen_zone_str = Zone :
+$zen_altitude = Altitude :
 $transmit_msg = Wait for sync before Transmitting
+$transmit_popup_msg = Do you want to transmit ?
+$set_up_transmit_str2 = STOP
 
 // TIMER
 $time_zone_err1 = Your computer time does not match the GPS time. Please verify your Time zone or your computer time settings. Time difference :
@@ -76,7 +82,7 @@ $yes = yes
 $no = no
 
 // Version check
-$version_err1 = Your ZenBox does not have the same firmware on all the channels. Please go to Options to upgrade to the most recent firmware.	
+$version_err1 = Your ZenBox does not have the same firmware on all the channels. Please go to Options to check and upgrade to the most recent firmware.	
 $version_err2 = This box uses different firmwares !!
 
 // Parameters AUTO-Check
@@ -90,9 +96,10 @@ $commit_msg1 = There is no BOARD calibration for this box. Do you want to contin
 $commit_msg2 = STATION is empty !
 $commit_msg3 = No schedule defined !
 $commit_msg4 = The start time of the schedule is anterior or to close to now.
-$commit_msg5 = The survey is not complete !
-$commit_msg6 = Do you want to check your setup first ?
+$commit_msg5 = The layout is not complete !
+$commit_msg6 = Do you want to check your configuration first ?
 $commit_msg7 = Maximum number of characters is : 64
+$commit_msg8 = There is no ANTENNA calibration for this acquisition. Do you want to continue ?
 
 // PROGRESS BAR
 $progress_title1 = Metadata
@@ -128,7 +135,7 @@ $get_folder_push_str = Load
 $save_push_str = Save
 
 // DATA TRANSFER
-$data_transfer_msg1 = Data will copied into
+$data_transfer_msg1 = ZEN data will be copied to :
 $data_transfer_msg2 = No z3D files found
 $data_transfer_msg3 = Do you want to erase SD cards ?
 
