@@ -1,6 +1,6 @@
 function timer_RX(mTimer,~)
 
-%try
+try
     
 B=mTimer.UserData;
 handles=B.pass;
@@ -36,16 +36,22 @@ COM=findCOM;
 % COM PORT NUMBER
 if strcmp('NONE',COM{1,1})
 
+try
+       
+    %  Main Window Visible
+    figHandles = findall(0,'Type','figure');
+    for i=1:size(figHandles,1)
+       if  strcmp(figHandles(i).Tag,'ZenACQ')
+           figHandles(i).Visible='on';
+       end
+    end
+       
     % DELETE EXISTING OPEN SERIAL PORTS
-    newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
-
-    try
+    newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end  
+    
     % closes the figure
     delete(handles.ZenRX);
-    catch
-        disp('Error when close the windows')
-    end
-    
+
     % DELETE EXISTING TIMER
     Rx_timer=timerfind('Name','Rx_timer');
     if ~isempty(Rx_timer)
@@ -57,13 +63,19 @@ if strcmp('NONE',COM{1,1})
         delete(Rx_timer);
         return;
     end
-    
+
+    catch
+        disp('Error when closing the windows')
+    end
+   
 end
 
 
 %% COUNTDOWN IF COMMIT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 msg_val=get(handles.error_msg,'Value');
-if msg_val>0                                % IF THERE IS A SCHEDULE COMMITED
+
+%datestr(msg_val,'dd-HH:MM:SS')
+if msg_val>0                                % IF THERE IS A SCHEDULE COMMITED/
     dif=msg_val-time;
     dif_str = datestr(dif,'dd-HH:MM:SS');
     if dif<0                                % IF BEGINNING OF THE SCHEDULE
@@ -82,7 +94,11 @@ elseif msg_val==-1                          % START COUNTDOWN UNTIL END OF ACQUI
     else                                    % END OF COUNTDOWN, STOP DISPLAYING.
         set(handles.error_msg,'String','');
         if handles.main.type==1 % if TX Disable Transmit
-            set(handles.set_up,'Enable','on')
+            set(handles.set_up,'Enable','on','String',handles.language.set_up_transmit_str)
+            set(handles.display_real_time,'Enable','on')
+            set(handles.check_setup,'Enable','on')
+            % update number of files
+            %handles = ZenRX_NbofFiles( handles );
         end
     end
 end
@@ -126,6 +142,8 @@ end
     set(handles.status_sync_val,'TooltipString',tooltip_str(1:end-1));
     set(handles.status_sync,'TooltipString',tooltip_str(1:end-1)); 
     
+    %test
+    %total_Y=6
     
      % IF THE TOTAL SUM EQUAL THE AMOUNT OF CHANNEL DISPLAY SYNC CIRCLE
      if total_Y==size(handles.CHANNEL.ch_serial,2)
@@ -141,9 +159,10 @@ end
          
          % GET TIME
          timeGPS=QuickSendReceive(handles.CHANNEL.ch_serial{1,1},'gettime',10,'LastTime&DatefromGPSwas:','(');
-         
          time_GPS_raw=datenum(timeGPS,'yyyy-mm-dd,HH:MM:SS');
-         time_GPS_dec=time_GPS_raw+time_zone+leak_second;
+         time_GPS_dec=time_GPS_raw+time_zone+leak_second; % LOCAL TIME
+              
+         
          set(handles.status_sync_val,'Value',time_GPS_dec)
          set(handles.status_sync,'Value',time_GPS_raw)
          dif_time=abs(time_GPS_dec-time);
@@ -265,5 +284,5 @@ else
     set(handles.set_up,'BackgroundColor',[0 0.447 0.741],'Enable','on');
 end
 
-%catch
-%end
+catch
+end

@@ -1,15 +1,15 @@
-function [TS_data,TS_time,build_software,build_hardware,Serial,channel,GPS,err,err_t,ADfreq, ...
-   gain,period_divider,duty_divider,latitude,longitude,altitude,  ...
-   Nbsat,GPSweek,TX,RX,CMP,STN_ANT,A_spacing,err_minus,databytes,L_TS,Box_Nb,CAL,error_status] ...
-   = data_readZ3D(file,TS_start,TS_end)
+  function [TS_data,TS_time,build_software,build_hardware,Serial,channel,GPS,err,err_t,ADfreq, ...
+     gain,period_divider,duty_divider,latitude,longitude,altitude,  ...
+     Nbsat,GPSweek,TX,RX,CMP,STN_ANT,A_spacing,err_minus,databytes,L_TS,Box_Nb,CAL,error_status] ...
+     = data_readZ3D(file,TS_start,TS_end)
 
-%  clear all
-%   clc
-% % file='C140_1Z.Z3D';
-% %  %file='/Users/marc/Desktop/Scripps_ZEN_#50/dataNEW/Ch5.Z3D';
-%  file='C:\ZenMT\calibrate\temp\2014-09-19\02_36_marc.benoit_ZEN1\ZenRawData\ZEN1_CH4\CAL_01.Z3D';
-%  TS_start=4;
-%  TS_end=0;
+%    clear
+%     clc
+%   %file='C140_1Z.Z3D';
+% % %  %file='/Users/marc/Desktop/Scripps_ZEN_#50/dataNEW/Ch5.Z3D';
+%    file='C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ\calibrate\brd_temp\2015-03-24\15_27_Marc.Benoit_ZEN1\ZenRawData\ZEN1_CH4\01_HCAL.Z3D';
+%    TS_start=4;
+%    TS_end=0;
 
 
 % CLOCK %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,7 +30,7 @@ ADC_freq=2097152; %ADC speed
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % TS_data=[];
-% TS_time=[];
+% TS_time=0;
 % build_software=[];
 % build_hardware=[];
 % Serial=[];
@@ -157,7 +157,7 @@ try
             Z3=textscan(Z{1,1}{i,1},'%f %s %f %f','delimiter',':');
             STRING=Z3{1,2}{1,1};
             STRING1=STRING(9:16);
-            STRING2=STRING(1:9);
+            %STRING2=STRING(1:9);
             ID1=uint64(hex2dec(STRING1));
             Z4(i-2,1)=ID1;
             Z4(i-2,2)=Z3{1,1};
@@ -211,8 +211,24 @@ tic
 % Get number of bytes of the file and length of the data reccord.
 java_call = java.io.File(file);
 bytes_size = length(java_call);
-offset=mod(bytes_size,4);
-LL=((bytes_size-databytes)-offset)/4;
+
+% Find first timestamp
+fseek(fid,0, 'bof');
+data=fread(fid,2^16);
+
+    % Find first second
+     found=0;ii=0;
+     while found==0
+         ii=ii+1;
+         if data(ii,1)==255 && data(ii+1,1)==255 && data(ii+2,1)==255 && data(ii+3,1)==127 ...
+              && data(ii+4,1)==0 && data(ii+5,1)==0 && data(ii+6,1)==0 && data(ii+7,1)==128
+         found=1;
+         end
+         
+     end
+offset=ii-1;
+
+LL=floor(((bytes_size-databytes)-offset)/4) ;
 
 
 power_size = nextpow2(LL+1)-1;
@@ -234,10 +250,11 @@ residualbytes=databytes+(LL-residual)*4; % residual bytes location
 
 % READ DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 %try
 
 % Read buffer of data
-fseek(fid,databytes+offset,'bof');
+fseek(fid,offset,'bof');
 TS_data=int32(zeros(LL,1));
 for i=1:block_number
     TS_data(data_block*(i-1)+1:data_block*(i),1)=fread ...

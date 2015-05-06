@@ -1,4 +1,4 @@
-function delete_files(left_bar,bottom_bar,width_bar,height_bar,EXTENSION)
+function delete_files(left_bar,bottom_bar,width_bar,height_bar,EXTENSION,list_Drive_Before)
 %Copy Z3D files from SD cards to an OUTPUT define path
 
 
@@ -12,9 +12,10 @@ progress = waitbar(0,'DELETE ','Name',['Delete ' EXTENSION] ...
 
 % FIND TOTAL NUMBER OF FILE TO DELETE (FOR PROGRESS BAR)
 total_files=0;
-for i=1:numel(r)   
-     list=dir_fixed([char(r(i)) EXTENSION]);  
-     if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
+for i=1:numel(r)
+     %list=dir_fixed([char(r(i)) EXTENSION]);  
+     list=dir([char(r(i)) EXTENSION]);
+     if ~isempty(list) && isempty(find(cellfun(@isempty,strfind(list_Drive_Before,char(r(i))))==0, 1))
          for j=1:size(list,1)
               total_files=total_files+1;
          end
@@ -27,7 +28,7 @@ file_nb=0;
 for i=1:numel(r)
      
      list=dir_fixed([char(r(i)) EXTENSION]);  
-     if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
+     if ~isempty(list) && isempty(find(cellfun(@isempty,strfind(list_Drive_Before,char(r(i))))==0, 1))
          for j=1:size(list,1)
               file_nb=file_nb+1;
               

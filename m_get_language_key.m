@@ -12,9 +12,6 @@ feature('DefaultCharacterSet', 'UTF8');
 % GET CONTENT
 file_content=l_get_file_content( ext );
 
-%if ~isempty(file_content)
-    
-
     keys.delete_file=l_search_key('$delete_file',file_content,ext);
     keys.copy_file=l_search_key('$copy_file',file_content,ext);
     keys.data_look=l_search_key('$data_look',file_content,ext);
@@ -170,9 +167,4 @@ file_content=l_get_file_content( ext );
     keys.save_push_str=l_search_key('$save_push_str',file_content,ext);
     
     
-    
-    
-   
-    
-
 end

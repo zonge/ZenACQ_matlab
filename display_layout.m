@@ -59,7 +59,9 @@ ZenACQ_vars.setup_infos.Ystn_box=Ystn_box;
 
 setappdata(0,'tunnel',ZenACQ_vars);% SET GLOBAL VARIABLE
 
-OpenFig=findobj('type','figure','name','ZenSurvey');
+%OpenFig=findobj('type','figure','name','ZenSurvey');
+OpenFig=findobj('type','figure','name','ZenLayout');
+
 if ~ishandle(OpenFig)
 close(OpenFig)
 end

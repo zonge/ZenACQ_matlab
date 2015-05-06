@@ -5,11 +5,19 @@ function [ handles ] = ZenRX_schedule( handles,edit_file )
 % Created by Marc Benoit
 % Oct 10, 2014
 
+ 
+date=get(handles.date_push,'String');hour=get(handles.hour_popup,'Value')-1;min=get(handles.min_popup,'Value')-1;
+start_date=datenum([date ' ' num2str(hour) '-' num2str(min) ],'dd mmm yyyy HH-MM');
+
+ZenACQ_vars.start_date=start_date;
 ZenACQ_vars.main=handles.main;
 ZenACQ_vars.setting=handles.setting;
 ZenACQ_vars.language=handles.language;
 setappdata(0,'tunnel',ZenACQ_vars);                % SET GLOBAL VARIABLE
 setappdata(0,'tunnel2',edit_file);                 % SET GLOBAL VARIABLE
+
+global SCH_status
+SCH_status=false;
 
  w=ZenSCH;
 
@@ -18,8 +26,13 @@ uiwait(w);
 
 handles.SCH=getappdata(0,'tunnelback');
 
+if SCH_status==false
+    return;
+end
+ 
 % FIND SCHEDULE
 main_file=l_find_schedule( handles );
+
 
 % CREATE SCH OBJ
 if ~isempty(main_file)

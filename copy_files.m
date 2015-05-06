@@ -1,7 +1,7 @@
-function raw_data_dir=copy_files(left_bar,bottom_bar,width_bar,height_bar,path_output,EXTENSION,no_cal_file)
+function raw_data_dir=copy_files(left_bar,bottom_bar,width_bar,height_bar,path_output,EXTENSION,list_Drive_Before,no_cal_file)
 %Copy Z3D files from SD cards to an OUTPUT define path
 
-if nargin==6
+if nargin==7
 no_cal_file=false;
 end
 
@@ -36,11 +36,11 @@ progress = waitbar(0,'COPY Z3DS...','Name','Copy Z3Ds' ...
 % FIND TOTAL NUMBER OF FILE TO COPY (FOR PROGRESS BAR)
 total_files=0;
 for i=1:numel(r)   
-     list=dir_fixed([char(r(i)) EXTENSION]);
-     %list=dir([char(r(i)) EXTENSION]);
-     if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
+     %list=dir_fixed([char(r(i)) EXTENSION]);
+     list=dir([char(r(i)) EXTENSION]);
+     if ~isempty(list) && isempty(find(cellfun(@isempty,strfind(list_Drive_Before,char(r(i))))==0, 1))
          for j=1:size(list,1)
-          if list(j).bytes>MIN_SIZE && ~strcmp(list(j).name(1:3),'ZEN')
+          if list(j).bytes>MIN_SIZE && ~strcmpi(list(j).name(1:3),'ZEN')
               total_files=total_files+1;
           end
          end
@@ -49,11 +49,11 @@ end
 % MAIN LOOP
 file_nb=0;
 for i=1:numel(r)
-     list=dir_fixed([char(r(i)) EXTENSION]);
-     %list=dir([char(r(i)) EXTENSION]);  
-     if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
+     %list=dir_fixed([char(r(i)) EXTENSION]);
+     list=dir([char(r(i)) EXTENSION]);  
+     if ~isempty(list) && isempty(find(cellfun(@isempty,strfind(list_Drive_Before,char(r(i))))==0, 1))
          for j=1:size(list,1)
-          if list(j).bytes>MIN_SIZE && ~strcmp(list(j).name(1:3),'ZEN')
+          if list(j).bytes>MIN_SIZE && ~strcmpi(list(j).name(1:3),'ZEN')
               
               % Skip calibration file if not a calibration
               if no_cal_file==false
@@ -66,7 +66,6 @@ for i=1:numel(r)
               
               % SOURCE
               source=([char(r(i)) list(j).name]);
-              disp(['COPY : ' source ' size : ' num2str(list(j).bytes)])
               
               % Open file
               fid = fopen(source);
@@ -95,6 +94,7 @@ for i=1:numel(r)
               % Copy files
               destination=folder_dir;
               copyfile(source,destination,'f'); 
+              disp(['COPY : ' source ' size : ' num2str(list(j).bytes) ' to : ' destination])
              
               pourcentage=[sprintf('%0.2f',(file_nb/total_files)*100) ' %'];
               waitbar(file_nb/total_files,progress,sprintf('%s',pourcentage));
@@ -105,7 +105,7 @@ for i=1:numel(r)
      end
 end
 
-if nargin==6 && file_nb>0
+if no_cal_file==false && file_nb>0
     attach_folder='attachment';
     list=dir(attach_folder);
     isfile=~[list.isdir];

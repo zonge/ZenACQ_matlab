@@ -8,8 +8,11 @@ function [ handles ] = ZenACQ_data_transfer( handles )
 EXTENSION='*.Z3D';
 import java.io.*; f=File('');r=f.listRoots; % Check number of drive before UMASS
 NbD_b_UMASS=numel(r);
+global list_Drive_Before
+list_Drive_Before=cell(numel(r),1);for i=1:numel(r);list_Drive_Before{i,1}=char(r(i));end
 COM_Nb=size(findCOM,1);
 status_SD=false;
+
 
 % Set Zen status msg invisble
 set(handles.msg_txt,'Visible','off')
@@ -64,7 +67,7 @@ while drive<NbD_b_UMASS
     for i=1:numel(r)   
      list=dir_fixed([char(r(i)) EXTENSION]);  % Standard Matlab dir command fails with files dated in 1980 (with the old Zen ARM file library) 
      %list=dir([char(r(i)) EXTENSION])
-     if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
+     if ~isempty(list) && isempty(find(cellfun(@isempty,strfind(list_Drive_Before,char(r(i))))==0, 1))
         drive=drive+1;
      end
     end
@@ -75,7 +78,6 @@ end
 close(h);
 
 
-
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % COPY DATA +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -84,7 +86,7 @@ close(h);
 handles.path_output=handles.setting.z3d_location;
 
 %% Transfer Data
-[~,~]=data_transfert( handles,EXTENSION );
+[~,~]=data_transfert( handles,EXTENSION,list_Drive_Before );
 
 % Set Zen status msg invisble
 set(handles.msg_txt,'Visible','on','Value',1)

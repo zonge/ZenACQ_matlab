@@ -1,4 +1,4 @@
-function [ file_content,status ] = l_read_file(EXTENSION)
+function [ file_content,status ] = l_read_file(FILE)
 % GET THE CONTENT OF THE FILE
 %   INPUT  : File Name
 %   OUTPUT : File content (cell array)
@@ -9,17 +9,17 @@ function [ file_content,status ] = l_read_file(EXTENSION)
 file_content=[];
 status=1;
 
-[pathstr,name,ext] = fileparts(EXTENSION);
+[pathstr,name,ext] = fileparts(FILE);
 
 % IF in a different folder
 temp_path=cd;
 if ~isempty(pathstr)
 cd(pathstr);
-EXTENSION=[name ext];
+FILE=[name ext];
 end
 
 % FIND FILE
-file_dir=dir(EXTENSION);
+file_dir=dir(FILE);
 cd(temp_path);
 if size(file_dir,1)>1                % more than one file
     status=2;return;

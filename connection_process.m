@@ -25,9 +25,9 @@ for i=1:size(COM,1)
 
     if status_connect==0
         
-        connected_ch=connected_ch+1;
+        connected_ch=connected_ch+1; %increment connected channel
         
-        C.ch_serial{connected_ch}=ch_serial;
+        C.ch_serial{connected_ch}=ch_serial; % Add channel Obj to the Channel Obj Array
         
         pourcentage=[sprintf('%0.2f',(i/(size(COM,1)*2))*100) ' %'];
         waitbar((i/(size(COM,1)*2)),progress,sprintf('%s',[COM{i} ' - ' pourcentage]));
@@ -56,6 +56,13 @@ for i=1:connected_ch
         ch_info.BoardSN=QuickSendReceive(C.ch_serial{i},'version',10,'FPGAserialnumber:0x',',buildnumber:');
     end
     
+    if str2double(ch_info.version)<4329
+        h=errordlg('Firmware version 4329 or higher is required. Please go to Options and upgrade your box to the last available firmware.','ZenACQ');
+        uiwait(h);
+        connected_ch=0;
+        break
+    end
+    
     if status_connect==0
         
         C.ch_info{j}=ch_info;
@@ -71,6 +78,9 @@ close(progress)
      status=1;
      return;
  end
+ 
+ disp(['[ Box # ] : ' num2str(ch_info.BoxNb)]) ;
+disp(['[ Firmware Version ] : ' ch_info.version]) ;
  
  % Update if Serials if Error in the header read.
  connected_ch=size(C.ch_info,2);
@@ -143,8 +153,11 @@ end
 
 close(progress)
 
+% START DEFAULT STATE INITIALIZATION
 Zen_default( handles,C,connected_ch );
+
 end
+
 % HANDLES CHANNELS VARIABLES
 handles.CHANNEL=C;
 

@@ -45,8 +45,6 @@ fprintf(fileID,'%s\n','for /L %%i in (1,1,%count%) do (');
 fprintf(fileID,'%s\n','lpc21isp -control -controlswap -controlinv %1 !port[%%i]! 230400 14745');
 fprintf(fileID,'%s\n',')');
 fprintf(fileID,'%s\n','echo. 2>done.fir');
-%fprintf(fileID,'%s\n','echo Firmware is installed. Press enter to exit.');
-%fprintf(fileID,'%s\n','pause');
 fprintf(fileID,'%s\n','exit');
 fclose(fileID);
   
@@ -56,9 +54,9 @@ eval(['!ZenARM.bat ' hex_path ' &']);
 a=0;
 while a==0
    if exist('done.fir','file')==2
-       beep
+       [sync_sound,f]=audioread('sync_done.mp3');
+       sound(sync_sound,f)
        pause(0.1)
-       beep
        a=1;
        delete('done.fir')
         set(handles.upgrade_msg,'String','Firmware is upgraded');
@@ -67,7 +65,7 @@ while a==0
    pause(1)
 end
 
-
+delete('ZenARM.bat')
 
 %% Initiate box.
 

@@ -68,7 +68,7 @@ for k=1:size(files,1)
     
     
     %%Stop if files are smaller than ... bytes
-    min_value=(TS_start*4*adSR)+4096;
+    min_value=(TS_start*4*adSR)+1024;
     
     if (all_Files{j,4}<min_value)
         test=test+1;

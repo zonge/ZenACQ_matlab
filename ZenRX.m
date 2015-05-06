@@ -3,7 +3,7 @@ function varargout = ZenRX(varargin)
 %      ZENRX set the receiver and transmiter information
 % and commit/transmit the action
 
-% Last Modified by GUIDE v2.5 27-Jan-2015 12:42:42
+% Last Modified by GUIDE v2.5 01-Apr-2015 14:49:21
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -143,7 +143,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%  2. SURVEY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  2. LAYOUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -204,7 +204,8 @@ set(handles.z_positive_str,'Enable','on')
 set(handles.z_positive,'Enable','on')
 set(handles.set_up,'Enable','on')
 set(handles.design_popup,'Enable','on')
-
+set(handles.station_vs_offset,'Enable','on')
+set(handles.voltage_info,'Enable','on')
 [ UTM_toggle,DATA,A_space,S_space,SX_azimuth,z_positive,ZenUTM] = get_survey_GUI_var( handles );
 update_table( handles,DATA,UTM_toggle,A_space,S_space,SX_azimuth,z_positive,ZenUTM );
 
@@ -368,9 +369,10 @@ for i=1:size(DATA,1)
        end
 end
 
-handles.z_prev=z_positive;
 
 handles=update_table( handles,DATA,UTM_toggle,A_space,S_space,SX_azimuth,z_positive,ZenUTM );
+
+handles.z_prev=z_positive;
 
 % SAVE HANDLES and HObjects
 guidata(hObject, handles);
@@ -387,15 +389,15 @@ handles=update_table( handles,DATA,UTM_toggle,A_space,S_space,SX_azimuth,z_posit
 guidata(hObject, handles);
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-% SURVEY SELECTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% LAYOUT SELECTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function design_popup_Callback(hObject, ~, handles)
 
 contents = cellstr(get(hObject,'String'));
 if handles.main.type==0 % RX
-main_file=['design' filesep contents{get(hObject,'Value')} '.RXgeo'];
+main_file=[handles.main.layout_folder filesep contents{get(hObject,'Value')} '.RXgeo'];
 elseif handles.main.type==1 % TX
-main_file=['design' filesep contents{get(hObject,'Value')} '.TXgeo'];
+main_file=[handles.main.layout_folder filesep contents{get(hObject,'Value')} '.TXgeo'];
 end
 % UPDATE TABLE
 handles=m_get_design( main_file,handles,false );
@@ -416,10 +418,15 @@ guidata(hObject, handles);
 
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-% SAVE SURVEY +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% SAVE LAYOUT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function save_push_Callback(hObject, ~, handles)
 
+UTM_toggle=0;
+set(handles.utm_checkbox,'Value',UTM_toggle);
+[~,DATA,A_space,S_space,SX_azimuth,z_positive,ZenUTM] = get_survey_GUI_var(handles);
+handles=update_table( handles,DATA,UTM_toggle,A_space,S_space,SX_azimuth,z_positive,ZenUTM );
+    
 geometry_tbl=get(handles.geometry_table,'data');
 survey.Xstn_box=get(handles.Xstn_box,'String');
 survey.Ystn_box=get(handles.Ystn_box,'String');
@@ -430,18 +437,18 @@ survey.s_space_box=get(handles.s_space_box,'String');
 survey.z_positive=get(handles.z_positive,'Value');
 
 
-% SAVE SURVEY
-handles = ZenRX_save_survey( handles,geometry_tbl,survey );
+% SAVE LAYOUT
+handles = ZenRX_save_layout( handles,geometry_tbl,survey );
 
 % SAVE HANDLES and HObjects
 guidata(hObject, handles);
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-% SURVEY TABLE AUTO-FILL ++++++++++++++++++++++++++++++++++++++++++++++++++
+% LAYOUT TABLE AUTO-FILL ++++++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function geometry_table_CellEditCallback(hObject, eventdata, handles)
  
-handles = ZenRX_survey_autofill( handles,eventdata );
+handles = ZenRX_layout_autofill( handles,eventdata );
 
 % SAVE HANDLES and HObjects
 guidata(hObject, handles);
@@ -480,6 +487,7 @@ ZenACQ_vars.main=handles.main;
 ZenACQ_vars.setting=handles.setting;
 ZenACQ_vars.language=handles.language;
 ZenACQ_vars.CHANNEL=handles.CHANNEL;
+ZenACQ_vars.CH1_index=handles.CH1_index;
 setappdata(0,'tunnel',ZenACQ_vars);                % SET GLOBAL VARIABLE
 
 try
@@ -582,7 +590,7 @@ com.mathworks.mwswing.MJUtilities.initJIDE;
 % Display a DateChooserPanel
 jPanel = com.jidesoft.combobox.DateChooserPanel;
 jPanel.setShowWeekNumbers(false);
-[hPanel,hContainer] = javacomponent(jPanel,[10,18,650,370],gcf);
+[hPanel,hContainer] = javacomponent(jPanel,[10,25,830,410],gcf);
 set(hPanel,'ShowTodayButton',false);
 set(hPanel,'ShowNoneButton',false);
 handles.jPanel=jPanel;
@@ -719,55 +727,9 @@ guidata(hObject, handles);
 
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-% ACTION WHEN GUI IS CLOSING ++++++++++++++++++++++++++++++++++++++++++++++
+% GET ANT CALIBRATION FILE ++++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function ZenRX_CloseRequestFcn(hObject, ~, ~)
-
-% DELETE EXISTING TIMER
-try
-Rx_timer=timerfind('Name','Rx_timer');
-if ~isempty(Rx_timer)
-    stop(Rx_timer);
-    Rx_timer_status=Rx_timer.Running;
-    while strcmp(Rx_timer_status,'on')
-        Rx_timer_status=Rx_timer.Running;
-    end
-    pause(0.25);
-    delete(Rx_timer);
-end
-catch
-end
-
-% DELETE EXISTING OPEN SERIAL PORTS
-newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
-
-% Close figure
- delete(hObject);
- 
- ZenACQ
- 
-
-% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-% GENERAL CREATE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++
-% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- function general_CreateFcn(hObject, ~, ~)
- if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-     set(hObject,'BackgroundColor','white');end
- 
-
-% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-% GENERATE OUTPUT TO CMD ++++++++++++++++++++++++++++++++++++++++++++++++++
-% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function varargout = ZenRX_OutputFcn(~, ~, handles) 
-varargout{1} = handles.output;
-
-
-
-% --- Executes on button press in antenna_cal_str.
 function antenna_cal_str_Callback(~, ~, handles)
-% hObject    handle to antenna_cal_str (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 [filename, pathname] = uigetfile( ...
 {  '*.cal',  'Antenna Files (*.cal)'}, ...
@@ -795,11 +757,10 @@ else % IF FILE EXIST
 end
 
 
-% --- Executes on button press in tx_cal_str.
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% GET TX CALIBRATION FILE ++++++++++++++++++++++++++++++++++++++++++++++++
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function tx_cal_str_Callback(~, ~, handles)
-% hObject    handle to tx_cal_str (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 [filename, pathname] = uigetfile( ...
 {  '*.cal',  'TX Files (*.cal)'}, ...
@@ -827,3 +788,191 @@ else % IF FILE EXIST
     set(handles.tx_cal_str,'TooltipString',['Found :' filename])
 end
 end
+
+
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% ACTION WHEN GUI IS CLOSING ++++++++++++++++++++++++++++++++++++++++++++++
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function ZenRX_CloseRequestFcn(hObject, ~, ~)
+
+   try
+       
+    %  Main Window Visible
+    figHandles = findall(0,'Type','figure');
+    for i=1:size(figHandles,1)
+       if  strcmp(figHandles(i).Tag,'ZenACQ')
+           figHandles(i).Visible='on';
+       end
+    end
+       
+    % DELETE EXISTING OPEN SERIAL PORTS
+    newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end  
+    
+    % closes the figure
+    delete(hObject);
+
+    % DELETE EXISTING TIMER
+    Rx_timer=timerfind('Name','Rx_timer');
+    if ~isempty(Rx_timer)
+        stop(Rx_timer);
+        Rx_timer_status=Rx_timer.Running;
+            while strcmp(Rx_timer_status,'on')
+                Rx_timer_status=Rx_timer.Running;
+            end
+        delete(Rx_timer);
+        return;
+    end
+
+    catch
+        disp('Error when closing the windows')
+    end
+
+
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% GENERAL CREATE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ function general_CreateFcn(hObject, ~, ~)
+ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+     set(hObject,'BackgroundColor','white');end
+ 
+
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% GENERATE OUTPUT TO CMD ++++++++++++++++++++++++++++++++++++++++++++++++++
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function varargout = ZenRX_OutputFcn(~, ~, handles) 
+varargout{1} = handles.output;
+    
+
+
+% --- Executes on button press in station_vs_offset.
+function station_vs_offset_Callback(hObject, ~, ~)
+% hObject    handle to station_vs_offset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+stn_offset=get(hObject,'Value');
+if stn_offset==true
+    set(hObject,'String','Station');
+    set(findobj('Tag','layout_table_title'),'String','Station #')
+elseif stn_offset==false
+    set(hObject,'String','Offset');
+    set(findobj('Tag','layout_table_title'),'String','Station offset')
+end
+
+
+% --- Executes on button press in voltage_info.
+function voltage_info_Callback(hObject, ~, handles)
+% hObject    handle to voltage_info (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% STOP TIMER
+stop(handles.timer_RX);
+
+% CALCULATE AND DISPLAY CRES
+handles = ZenRX_Voltage_infos( handles );
+
+% STAR_1 TIMER
+start(handles.timer_RX);
+
+% SAVE HANDLES and HObjects
+guidata(hObject, handles);
+
+
+% --- Executes on button press in import_sch.
+function import_sch_Callback(hObject, ~, handles)
+% hObject    handle to import_sch (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+survey_type=str2double(handles.setting.ZenACQ_mode);
+if survey_type==1
+    EXT='MTsch';
+elseif (survey_type==2 || survey_type==3) && handles.main.type==0
+    EXT='IPsch';
+elseif (survey_type==2 || survey_type==3) && handles.main.type==1
+    EXT='TXsch';
+end
+
+[filename, pathname] = uigetfile( ...
+{  ['*.' EXT],  ['SCH Files (*.' EXT ')']}, ...
+   'Select a SCH file');
+
+if filename==0;return;end
+
+[~,sch_name,~] = fileparts(filename);
+
+% COPY TO CALIBRATE FOLDER
+if ~strcmpi([pathname filename],[cd filesep 'schedule' filesep filename])
+if ~exist('schedule','dir'); mkdir('schedule') ; end
+copyfile([pathname filename],['schedule' filesep filename]);
+end
+
+handles.SCH.last_schedule=sch_name;
+
+l_modif_file( handles.main.Setting_ext,'$Rx_schedule_selected',sch_name )
+
+% FIND SCHEDULE
+main_file=l_find_schedule( handles );
+
+% CREATE SCH OBJ
+handles.SCHEDULE.TOTAL_TIME=0;
+if ~isempty(main_file)
+    handles.SCHEDULE = m_get_sch_obj( main_file,handles,true );
+    set(handles.quick_summary_str,'String',handles.SCHEDULE.SUMMARY);
+    set(handles.quick_summary_str,'Value',1);
+end
+
+% UPDATE SCHEDULE FIELDS
+handles=l_Rx_update_time( handles );
+
+% SAVE HANDLES and HObjects
+guidata(hObject, handles);
+
+
+% --- Executes on button press in delete_all_files.
+function delete_all_files_Callback(hObject, ~, handles)
+% hObject    handle to delete_all_files (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+    answer = questdlg('Are you sure you want to delete all files ?','Files deletions','Yes','No','No');
+    
+    if strcmp(answer,'No');return;end;if isempty(answer)==1;return;end
+
+     progress = waitbar(0,'Delete Files','Name','Delete Files' ...
+     ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
+     handles.main.GUI.width_bar handles.main.GUI.height_bar]);   
+     %set(progress, 'WindowStyle','modal', 'CloseRequestFcn','');
+
+
+for ch=1:size(handles.CHANNEL.ch_serial,2) % LOOP THROUGH CHANNELS
+    
+  [c.List_Files,c.Nb_of_Files] = list_SDfiles(handles.CHANNEL.ch_serial{ch});
+  
+  if c.Nb_of_Files==0 % If no file --> go to next channel
+    continue
+  end
+  
+  pourcentage=[sprintf('%0.2f',((ch-1)/size(handles.CHANNEL.ch_serial,2))*100) ' %'];
+
+  for filenb=1:c.Nb_of_Files % LOOP THROUGH FILES
+      
+    filename=c.List_Files{1,1}.name{filenb,1};
+    
+    waitbar((ch-1)/size(handles.CHANNEL.ch_serial,2),progress...
+        ,sprintf('%s',['Delete Files : Ch ' num2str(ch) ' - ' filename(1:2) ':' filename(4:end) ' - ' pourcentage]));
+
+    % DELETE FILE
+    QuickSendReceive(handles.CHANNEL.ch_serial{ch},['DELETEFILE ' filename],10,'leteFileCommand','Deleted');
+
+  end
+end
+
+delete(progress)
+
+handles = ZenRX_NbofFiles( handles );
+
+% SAVE HANDLES and HObjects
+guidata(hObject, handles);

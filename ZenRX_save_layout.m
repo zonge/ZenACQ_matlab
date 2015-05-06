@@ -1,4 +1,4 @@
-function [ handles ] = ZenRX_save_survey( handles,geometry_tbl,survey)
+function [ handles ] = ZenRX_save_layout( handles,geometry_tbl,survey)
 % SAVE displayed survey to a file
 
 % Zonge International Inc.
@@ -20,55 +20,34 @@ if ~exist(folder,'dir');mkdir(folder);end
 if handles.main.type==0 % RX
 
 file_name=[folder filesep geo_name{1,1} '.RXgeo'];
-formatSpec='$geometryline%i = %s|%f|%f|%f|%f|%f|%f|\n';
-fid = fopen(file_name, 'w');
+formatSpec='$geometryline%i = %s,%f,%f,%f,%f,%f,%f\n';
+fid = fopen(file_name, 'w+');
 for i=1:size(geometry_tbl,1)
     cmp=geometry_tbl{i,1};
     s1x=geometry_tbl{i,2};
     s1y=geometry_tbl{i,3};
     s2x=geometry_tbl{i,4};
     s2y=geometry_tbl{i,5};
-    if ~isempty(handles.Ant)
-    if i>size(handles.Ant.num,2)
-        length_ant='';
-        azimut='';
-    else
-        length_ant=handles.Ant.num{1,i};
-        azimut=handles.Ant.azm{1,i};
-    end
-    else
-        length_ant='';
-        azimut='';
-    end
-    fprintf(fid,formatSpec,i,cmp,s1x,s1y,s2x,s2y,length_ant,azimut);
+    Tx_ant=geometry_tbl{i,6};
+    Azm=geometry_tbl{i,7};
+    fprintf(fid,formatSpec,i,cmp,s1x,s1y,s2x,s2y,Tx_ant,Azm);
 end
 
 elseif handles.main.type==1  % TX
     
-    file_name=[folder filesep geo_name{1,1} '.TXgeo'];
-formatSpec='$geometryline%i = %s|%f|%f|%f|%f|%f|%f|%s|%s|\n';
-fid = fopen(file_name, 'w');
+file_name=[folder filesep geo_name{1,1} '.TXgeo'];
+formatSpec='$geometryline%i = %s,%f,%f,%f,%f,%f,%f\n';
+fid = fopen(file_name, 'w+');
 for i=1:size(geometry_tbl,1)
     cmp=geometry_tbl{i,1};
     s1x=geometry_tbl{i,2};
     s1y=geometry_tbl{i,3};
     s2x=geometry_tbl{i,4};
     s2y=geometry_tbl{i,5};
-    length_ant=geometry_tbl{i,6};
-    azimut=geometry_tbl{i,7};
-    if ~isempty(handles.TX)
-     if i>size(handles.TX.type,2)
-         TX_type='';
-         TX_serial='';
-     else
-        TX_type=handles.TX.type{1,i};
-        TX_serial=handles.TX.sn{1,i};
-     end
-    else
-        TX_type='';
-        TX_serial='';
-    end
-    fprintf(fid,formatSpec,i,cmp,s1x,s1y,s2x,s2y,length_ant,azimut,TX_type,TX_serial);
+    Tx_ant=geometry_tbl{i,6};
+    Azm=geometry_tbl{i,7};
+    fprintf(fid,formatSpec,i,cmp,s1x,s1y,s2x,s2y,Tx_ant,Azm);
+
 end
     
     
@@ -103,11 +82,11 @@ fprintf(fid,'$geometryZpositive = %u\n',survey.z_positive);
 fclose(fid);
  
 survey_type=str2double(handles.setting.ZenACQ_mode);
-if handles.main.type==0
+if handles.main.type==0 % MT
     l_modif_file(handles.main.Setting_ext,'$Rx_geometry_selected_MT',geo_name{1,1} )
-elseif handles.main.type==0 && survey_type==2
+elseif handles.main.type==0 && survey_type==2 % IP RX
     l_modif_file(handles.main.Setting_ext,'$Rx_geometry_selected_IP_RX',geo_name{1,1} )
-elseif handles.main.type==1 && survey_type==2
+elseif handles.main.type==1 && survey_type==2  % IP TX
     l_modif_file(handles.main.Setting_ext,'$Rx_geometry_selected_IP_TX',geo_name{1,1} )
 end
 

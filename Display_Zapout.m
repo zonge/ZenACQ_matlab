@@ -1,4 +1,4 @@
-function [] = Display_Zapout( handles,selected_ch,Week_time )
+function [] = Display_Zapout( handles,selected_ch,Week_time,FFT_win,downsampling,SR,frequency_scale )
 
 % Clear figure content
 
@@ -17,18 +17,27 @@ end
 
 % MEMORY ALLOCATION & PLOT INITIALIZATION
 TS_buffer=zeros(max_buf,2,nb_of_channel);
+TS_buffer_win=zeros(max_buf,nb_of_channel);
 
 % FFT
-f = 256/2*linspace(0,1,max_buf/2+1)';
+if downsampling<1;downsampling=1;end
+SR=SR/downsampling;
+
+% Frequence vs period
+f = SR/2*linspace(0,1,max_buf/2+1)';
+Xfft_TYPE='Frequency (Hz)';
+if frequency_scale==false; f=1./f; Xfft_TYPE='Period (s)'; end
+
 axes(handles.FFT_plot);
 cla;
+FFTh = gobjects(nb_of_channel,1);
 FFT_buffer=zeros(max_buf/2+1,1,nb_of_channel);
 for ch=1:nb_of_channel
     index=ChNb==selected_ch(ch);
     FFTh(ch)=loglog(f,FFT_buffer(:,1,ch),'-.','Color',handles.color(ChNb(index),:));
     hold on
 end
-xlabel('Frequency (Hz)')
+xlabel(Xfft_TYPE)
 ylabel('Voltage (V)')
 grid on
 grid minor
@@ -37,6 +46,7 @@ ylim([10^-8  2])
 % TS
 axes(handles.TS_plot);
 cla;
+TSh = gobjects(nb_of_channel,1);
 for ch=1:nb_of_channel
     index=ChNb==selected_ch(ch);
     TSh(ch)=plot(TS_buffer(:,2,ch),TS_buffer(:,1,ch),'-','Color',handles.color(ChNb(index),:));
@@ -48,6 +58,8 @@ grid on
 grid minor
 
 
+% WAIT
+pause(0.6)
 
 % CLEAR BUFFER
 for ch=1:nb_of_channel
@@ -61,15 +73,23 @@ end
 % REFRESH CHANNEL DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 while (get(handles.togglebutton,'value'))% WHILE STOP BY USER
+    
     pause(0.1)
-% READ ZEN BUFFER
+    % READ ZEN BUFFER
     for ch=1:nb_of_channel
         serial=ChNb==selected_ch(ch); 
         % TS
-        TS_buffer(:,:,ch) = Read_Zapout( ch_serial{serial},max_buf,0,TS_buffer(:,:,ch),Week_time);
+        [TS_buffer(:,:,ch)] = Read_Zapout( ch_serial{serial},max_buf,0,TS_buffer(:,:,ch),Week_time);
         
         % FFT
-        FFT_buffer(:,1,ch) = func_fft_quick(TS_buffer(:,2,ch),f);
+        switch FFT_win
+            case 2 % Piprolate4
+                TS_buffer_win(:,ch)=PiProlate4(TS_buffer(:,2,ch));
+            case 1 % none
+                TS_buffer_win(:,ch)=TS_buffer(:,2,ch);
+        end
+        
+        FFT_buffer(:,1,ch) = func_fft_quick(TS_buffer_win(:,ch),f);
         
         % DISPLAY 
         try
@@ -82,6 +102,7 @@ while (get(handles.togglebutton,'value'))% WHILE STOP BY USER
         catch 
             
         end
+        
         
 
     end

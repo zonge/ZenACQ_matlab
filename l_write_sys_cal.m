@@ -49,21 +49,19 @@ for ch=1:size(handles.CHANNEL.ch_serial,2)
     
     if survey_type==1 % MT
             
-        %end_first_block=strfind(AA,', 1:')-1;
+
         end_second_block=strfind(AA1,', 16:')-1;
-    
-        %meta_str1=['METADATA CAL.BRD,' handles.CHANNEL.ch_info{1,ch}.BoardSN ...
-        %           ',     ' AA(1:end_first_block) '|'];
-        %meta_str2=['METADATA CAL.BRD,' handles.CHANNEL.ch_info{1,ch}.BoardSN ...
-        %           ',     ' AA(end_first_block+3:end-2) '|'];
-        meta_str2=['METADATA CAL.BRD,' handles.CHANNEL.ch_info{1,ch}.BoardSN ...
+
+        meta_str1=['METADATA CAL.BRD,' handles.CHANNEL.ch_info{1,ch}.BoardSN ...
                    ',     ' AA(1:end-2) '|'];
+        meta_str2=['METADATA CAL.BRD,' handles.CHANNEL.ch_info{1,ch}.BoardSN ...
+                   ',     ' AA2(1:end-2) '|'];        
         meta_str3=['METADATA CAL.BRD,' handles.CHANNEL.ch_info{1,ch}.BoardSN ...
                    ',     ' AA1(1:end_second_block) '|'];
         meta_str4=['METADATA CAL.BRD,' handles.CHANNEL.ch_info{1,ch}.BoardSN ...
                    ',     ' AA1(end_second_block+3:end-2) '|'];
 
-        %QuickSendReceive(handles.CHANNEL.ch_serial{ch},meta_str1,10,'WroteNumMetaDataRecords(0x',')toEEProm');
+        QuickSendReceive(handles.CHANNEL.ch_serial{ch},meta_str1,10,'WroteNumMetaDataRecords(0x',')toEEProm');
         QuickSendReceive(handles.CHANNEL.ch_serial{ch},meta_str2,10,'WroteNumMetaDataRecords(0x',')toEEProm');
         QuickSendReceive(handles.CHANNEL.ch_serial{ch},meta_str3,10,'WroteNumMetaDataRecords(0x',')toEEProm');
         QuickSendReceive(handles.CHANNEL.ch_serial{ch},meta_str4,10,'WroteNumMetaDataRecords(0x',')toEEProm');

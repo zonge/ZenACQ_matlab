@@ -17,6 +17,7 @@ function [ output_value,status,data ] = QuickSendReceive( SERIAL_obj,Command,Com
         % CHECK FOR ANSWER
         [data,~,status] = waitln(SERIAL_obj,ResultString,Command,CommandMaxWaitTime);   % RECEIVE DATA
         
+        
         % SEND ONCE AGAIN IF NO ANSWER
         if inc_send>1  % If no answer after 1 try, stop
             break;

@@ -29,8 +29,7 @@ function ZenACQ_OpeningFcn(hObject, ~, handles, varargin)
 % Choose default command line output for ZenACQ
 handles.output = hObject;
 
-clc;
-
+% Initialization
 handles = ZenACQ_ini(handles);
 
 % Update handles structure
@@ -42,13 +41,15 @@ guidata(hObject, handles);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function receiver_Callback(~, ~, handles)
 
+% MAKE ZenACQ invisible
+set(handles.ZenACQ,'Visible', 'off');
 
 % DELETE EXISTING OPEN SERIAL PORTS
 newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
 
-
 % SET VARIABLE to the other windows
 handles.main.type=0; %Receiver
+
 ZenAQC_vars.main=handles.main;
 ZenAQC_vars.setting=m_get_setting_key(handles.main.Setting_ext,handles,true);
 ZenAQC_vars.language=handles.language;
@@ -57,12 +58,10 @@ setappdata(0,'tunnel',ZenAQC_vars);
 % UPDATE COM AVAILABLE
 COM=findCOM;
 if ~strcmp('NONE',COM{1,1})
-    % RUN ZenRX
     ZenRX;
 else
     warndlg(handles.language.ZenACQ_err1,'ZenACQ');
 end
-                     
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,12 +69,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function transmitter_Callback(~, ~, handles)
 
+% MAKE ZenACQ invisible
+set(handles.ZenACQ,'Visible', 'off');
+
 % DELETE EXISTING OPEN SERIAL PORTS
 newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
 
-
 % SET VARIABLE to the other windows
 handles.main.type=1; %Transmiter
+
 ZenAQC_vars.main=handles.main;
 ZenAQC_vars.setting=m_get_setting_key(handles.main.Setting_ext,handles,true);
 ZenAQC_vars.language=handles.language;
@@ -84,7 +86,7 @@ setappdata(0,'tunnel',ZenAQC_vars);
 % UPDATE COM AVAILABLE
 COM=findCOM;
 if ~strcmp('NONE',COM{1,1})
-    ZenRX; % RUN ZenTX
+    ZenRX;
 else
     warndlg(handles.language.ZenACQ_err1,'ZenACQ');
 end
@@ -117,18 +119,20 @@ ZenSettings
 % UPDATE GUI AND PARAMETERS
 handles.setting = m_get_setting_key(handles.main.Setting_ext,handles,true);
 
-if str2double(handles.setting.ZenACQ_mode)==1   % IF NOT RX MODE
-    set(handles.receiver,'Position',[5.6 27 44.4 9.231]);
-    set(handles.transmitter,'Visible','off','Position',[5.6 23.692 44.4 2.538])
+if str2double(handles.setting.ZenACQ_mode)==1   % IF RX MODE
+    set(handles.receiver,'Position',[5.6 21 44.4 9.231]);
+    set(handles.transmitter,'Visible','off','Position',[5.6 19 44.4 2.538])
 else                                            % IF TX MODE
-    set(handles.receiver,'Position',[5.6 30.538 44.4 5.692]);
-    set(handles.transmitter,'Visible','on','Position',[5.6 24.5 44.4 5.692])
+    set(handles.receiver,'Position',[5.6 26 44.4 5.692]);
+    set(handles.transmitter,'Visible','on','Position',[5.6 19.5 44.4 5.692])
+    
     % SET DUTY
     if str2double(handles.setting.ZenACQ_mode)==2
         handles.main.duty_cycle=100;
     elseif str2double(handles.setting.ZenACQ_mode)==3
         handles.main.duty_cycle=50;
     end
+    
 end
 
 % Update handles structure
@@ -156,18 +160,16 @@ guidata(hObject, handles);
 
 function copy_sds_Callback(~, ~, handles)
 
+global list_Drive_Before
 EXTENSION='*.Z3D';
 handles.path_output=handles.setting.z3d_location;
-[ ~,dir_path ] = data_transfert( handles,EXTENSION );
+data_transfert( handles,EXTENSION,list_Drive_Before );
 
-% open the folder containing data
-if ~strcmp(dir_path,'empty')
-winopen(fileparts(dir_path))
-end
 
 
 function delete_sds_Callback(~, ~, handles)
 
+global list_Drive_Before
 EXTENSION='*.Z3D';
 
 choice2 = questdlg(handles.language.data_transfer_msg3, ...
@@ -176,16 +178,12 @@ choice2 = questdlg(handles.language.data_transfer_msg3, ...
             
 waitfor(choice2)
             
-switch choice2
-    case handles.language.yes
+if strcmp(choice2,handles.language.yes)
         delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
-        handles.main.GUI.width_bar,handles.main.GUI.height_bar,EXTENSION)  
-    case handles.language.no
-        return;
+        handles.main.GUI.width_bar,handles.main.GUI.height_bar,EXTENSION,list_Drive_Before)
 end
-
 delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
-handles.main.GUI.width_bar,handles.main.GUI.height_bar,'*.CSV')  
+handles.main.GUI.width_bar,handles.main.GUI.height_bar,'*.CSV',list_Drive_Before)  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

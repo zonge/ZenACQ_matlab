@@ -250,6 +250,8 @@ freq_popup=get(handles.freq_popup,'Value');
 if freq_popup==1
     freq=256;
 elseif freq_popup==2
+    freq=1024;
+elseif freq_popup==3
     freq=4096;
 end
 

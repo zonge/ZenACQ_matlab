@@ -73,6 +73,10 @@ Ystn_box=ZenACQ_vars.setup_infos.Ystn_box;
 % Clear Graph
 cla
 
+% initiate legend
+j=0;for i=1:size(DATA,1);if strcmp(DATA{i,1},'Off');continue;else j=j+1;end;end
+legend_list=cell(j,1);
+
 j=0;
 for i=1:size(DATA,1)
     
@@ -101,9 +105,9 @@ for i=1:size(DATA,1)
     end
     
     % PLOT VECTOR
-    quiver_plot(handles,DATA{i,1},DATA{i,2},DATA{i,4},DATA{i,3},DATA{i,5},SX_azimut,z_positive,A_space,S_space,DATA{i,7}/180*pi,color);  
+    quiver_plot(handles,DATA{i,1},DATA{i,2},DATA{i,4},DATA{i,3},DATA{i,5},SX_azimut,z_positive,A_space,S_space,DATA{i,7},color);  
     try
-    legend_list{j}=[DATA{i,1} ' [ ' num2str(DATA{i,6}) ' ] (ch:' num2str(RowName(i)) ')'];
+    legend_list{j,1}=[DATA{i,1} ' [ ' num2str(DATA{i,6}) ' ] (ch:' num2str(RowName(i)) ')'];
     catch
     end
     
@@ -112,8 +116,7 @@ end
 if j>0
 set(handles.layout_plot,'DataAspectRatio',[1,1,1],'YGrid','On','YMinorGrid','On','XGrid','On','XMinorGrid','On');
 try
-legend(handles.layout_plot,legend_list,'Visible','off');
-%aa.Visible='off';
+%legend(handles.layout_plot,legend_list,'Visible','off');
 catch
 end
 xlabel('X-Coordinate')

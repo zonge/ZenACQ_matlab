@@ -37,7 +37,11 @@ set(handles.end_time_str0,'String',handles.language.end_time_str)
 set(handles.date_push,'String',handles.language.data_push_str)
 
 set(handles.survey_panel,'Title',handles.language.survey_panel_str)
-set(handles.stn_str,'String',handles.language.stn_str)
+if handles.main.type==1 % TX
+    set(handles.stn_str,'String','TX STN :')
+else
+    set(handles.stn_str,'String',handles.language.stn_str)
+end
 set(handles.line_str,'String',handles.language.line_str)
 set(handles.SX_azimut_str,'String',handles.language.SX_azimuth_str)
 set(handles.a_space_str,'String',handles.language.a_space_str)
@@ -72,16 +76,16 @@ if status==0
     end
     
     test_version=sum(cell2mat(strfind(version,version{1,1})));
-    
     if test_version==size(handles.CHANNEL.ch_info,2)
         set(handles.version_txt,'String',[handles.language.version_str ' ' version{1,1}]);     
     else
         set(handles.version_txt,'String',handles.language.version_err2,'ForegroundColor','Red') 
-        warndlg(handles.language.version_err1,handles.language.ZenTitle)
+        w=warndlg(handles.language.version_err1,handles.language.ZenTitle);
+        uiwait(w);
     end
     
 else
-    
+    set(handles.ZenRX,'Visible','off')
      set(handles.general_info_panel,'Visible','off')
      set(handles.schedule_panel,'Visible','off')
      set(handles.survey_panel,'Visible','off')
@@ -102,9 +106,13 @@ else
      set(handles.board_cal_str,'Visible','off')
      set(handles.antenna_cal_status,'Visible','off')
      set(handles.antenna_cal_str,'Visible','off')
-     set(handles.error_msg,'String','ERROR. PLEASE RESTART')
+     set(handles.delete_all_files,'Visible','off')
+     
+     
+     set(handles.error_msg,'String','ERROR !!')
+     
     
-    return;
+     return;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,13 +123,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if str2double(handles.setting.ZenACQ_mode)==2 && handles.main.type==0
     set(handles.general_info_panel,'Visible','off')
-    set(handles.schedule_panel,'Position',[0.018 0.577 0.967 0.327])
-else
-    
+    set(handles.schedule_panel,'Position',[0.015 0.583 0.972 0.327])
 end
+
 % READ SURVEY FILE
 survey_file_name = 'survey.zen';
-if exist(survey_file_name,'file')==2
+if exist(survey_file_name,'file')==2 % if exist load infos.
 handles.survey = m_get_survey_key(survey_file_name,handles,true);
 set(handles.job_operator_box,'String',handles.survey.job_operator)
 set(handles.job_number_box,'String',handles.survey.job_number)
@@ -129,6 +136,7 @@ set(handles.job_name_box,'String',handles.survey.job_name)
 set(handles.job_by_box,'String',handles.survey.job_by)
 set(handles.job_for_box,'String',handles.survey.job_for)
 end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SCHEDULE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,7 +185,7 @@ if handles.main.type==1 % TX
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GEOMETRY DESIGN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LAYOUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % LOAD LAST SAVED DESIGN FILE
@@ -186,7 +194,7 @@ if handles.main.type==0
     handles.SCH.last_design=handles.setting.Rx_geometry_selected_MT;
 elseif handles.main.type==0 && (survey_type==2 || survey_type==3)
     handles.SCH.last_design=handles.setting.Rx_geometry_selected_IP_RX; 
-elseif handles.main.type==1 && (survey_type==2 || survey_type==3)
+elseif handles.main.type==1 && (survey_type==2 || survey_type==3) % TX
     handles.SCH.last_design=handles.setting.Rx_geometry_selected_IP_TX;
 end
 
@@ -196,6 +204,16 @@ main_file=l_find_design( handles );
 % Initiate H-field and TX
 handles.Ant=[];
 handles.TX=[];
+
+
+if survey_type==2 || survey_type==3 % IP
+   set(handles.station_vs_offset,'Visible','off','Value',true,'String','Station');
+   %set(handles.station_vs_offset,'Visible','on','Value',true,'String','Station');
+   set(findobj('Tag','layout_table_title'),'String','Station #')
+else % MT
+   set(handles.station_vs_offset,'Visible','off','Value',false,'String','Offset');
+   set(findobj('Tag','layout_table_title'),'String','Station offset')
+end
 
 % UPDATE TABLE
 handles=m_get_design( main_file,handles,false );
@@ -210,6 +228,10 @@ handles.prev_SX_azimuth=SX_azimuth;
 handles.z_prev=z_positive;
 for i=1:size(DATA,1)
 handles.ant_raw_val{i,:}=[z_positive,SX_azimuth,DATA(i,7)];
+handles.CRES_values{i}=[];
+handles.SP{i}=[];
+handles.MaxV{i}=[];
+handles.Nb_of_File{i}=[];
 end
 ZenUTM.X=0;  % initiate
 ZenUTM.Y=0;  % initiate
@@ -218,21 +240,10 @@ ZenUTM.Y=0;  % initiate
 global tequila_status
 tequila_status=false;
 
-% Initiate CRES
-%     for i=1:size(handles.CHANNEL.ch_info,2)
-%         handles.CRES_values{i}=0;
-%     end
-
-% if handles.main.type==1 % TX
-% set(handles.check_setup,'Visible','off')
-% set(handles.z_positive_str,'Visible','off')
-% set(handles.z_positive,'Visible','off')
-% set(handles.utm_zone_str,'Visible','off')
-% set(handles.altitude_str,'Visible','off')
-% set(handles.altitude_str,'Visible','off')
-% end
-
 handles=update_table( handles,DATA,UTM_toggle,A_space,S_space,SX_azimuth,z_positive,ZenUTM );
+
+% update number of files
+handles = ZenRX_NbofFiles( handles );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -256,7 +267,6 @@ else  % If file exist
       set(handles.board_cal_status,'ForegroundColor','green','TooltipString',['Found :' filename])
       set(handles.board_cal_str,'TooltipString',['Found :' filename])
 end
-
 
 % CHECK ANTENNA CAL
 filename =['calibrate\' handles.main.calibrate_file_name];        

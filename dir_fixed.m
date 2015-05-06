@@ -6,6 +6,10 @@ function [ list ] = dir_fixed( LOCATION )
 % a Windows machine.
 %   Created by Marc Benoit on 8/1/2014
 
+% if software version higher than ...
+%list=dir(LOCATION);
+%return
+
 % PARAMETER
 formatIn = 'mm/dd/yyyy HH:MM AM';                                          % Date Format
 

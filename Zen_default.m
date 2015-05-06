@@ -16,9 +16,14 @@ for i=1:connected_ch
    [~,status_connect]=connect2(C.ch_serial{i});
    
    if status_connect==0
+       
+   % CLEAR SCHEDULE
+   QuickSendReceive( C.ch_serial{i},'CLEARSCHEDULE',10,'ClearScheduleCommand:','.' );
     
    % DATALOG
    QuickSendReceive( C.ch_serial{i},'datalog 0',10,'DataLog Command:','.' );
+   
+   pause(1)
    
    % LogTerminalInDatafiles 0
    QuickSendReceive( C.ch_serial{i},'LogTerminalInDatafiles 0',10,'LogTerminalInDatafiles:','.' );
@@ -33,16 +38,13 @@ for i=1:connected_ch
    QuickSendReceive( C.ch_serial{i},'ZIGRADIOENABLE 0',10,'ZigRadioEnabled:','.' );
    
    % DatafileType
-   QuickSendReceive( C.ch_serial{i},'DatafileType binary',10,'DatafileType:','.' );   
+   %QuickSendReceive( C.ch_serial{i},'DatafileType binary',10,'DatafileType:','.' );   
    
    % ADC MUX
-   QuickSendReceive( C.ch_serial{i},'ADCMUX 1',20,'MuxRegisteriscurrently:','x' );   
+   QuickSendReceive( C.ch_serial{i},'ADCMUX 1',10,'MuxRegisteriscurrently:','x' );   
    
    % METADATA CLEAR
    QuickSendReceive( C.ch_serial{i},'METADATA CLEAR',10,'NumMetaDataRecords(',')' );   
-    
-   % CLEAR SCHEDULE
-   QuickSendReceive( C.ch_serial{i},'CLEARSCHEDULE',10,'ClearScheduleCommand:','.' );
    
    % ScheduleRunAtGpsSync
    QuickSendReceive( C.ch_serial{i},'ScheduleRunAtGpsSync 0',10,'RunningscheduleatGPStimesync:','.' );   

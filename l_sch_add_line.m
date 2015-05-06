@@ -14,6 +14,8 @@ elseif strcmp(sr_str(sr_value),'High Band')
     sr=4;
 elseif strcmp(sr_str(sr_value),'Mid Band')
     sr=2;
+elseif strcmp(sr_str(sr_value),'Break')
+    sr=99;
 end
 
 survey_type=str2double(handles.setting.ZenACQ_mode);

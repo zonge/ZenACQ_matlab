@@ -1,6 +1,9 @@
 function [] = l_write_ant_cal( handles )
 %WRITE ANTENNA CAL TO EEPROM
 
+    progress = waitbar(0,handles.language.progress_str3,'Name',handles.language.progress_title1 ...
+    ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
+    handles.main.GUI.width_bar handles.main.GUI.height_bar]);   
 
 ch_num=get(handles.geometry_table,'RowName');
 filepath=['calibrate\' handles.main.calibrate_file_name];
@@ -64,9 +67,16 @@ if exist(filepath,'file')==2 % CHECK IF CAL EXIST
                end
             end  
         end 
+        
+        pourcentage=[sprintf('%0.2f',(ch/size(handles.CHANNEL.ch_serial,2))*100) ' %'];
+        waitbar(ch/size(handles.CHANNEL.ch_serial,2),progress,sprintf('%s',[handles.language.progress_str2 ' ' pourcentage]));
+
+        
     end
     
 end
+
+close(progress)
 
 
 end

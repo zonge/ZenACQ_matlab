@@ -1,12 +1,12 @@
 function [ handles ] = ZenACQ_calibration( handles )
 % Calibrate the box
-
+ 
 % Zonge International Inc.
 % Created by Marc Benoit
-% Oct 10, 2014
-
+% March 24, 2015
+ 
 % CONFIRMATION
-choice = questdlg({'You are about to start a calibration.'; 'Please select the type of calibration'} , ...
+choice = questdlg({'You are about to start a calibration.';'';'Make sure all outputs are open !!';'';'Please select the type of calibration'} , ...
 'System Calibration', ...
 'Internal','External','Cancel','Internal');
 
@@ -28,6 +28,7 @@ set(handles.msg_txt,'Visible','off')
 
 if status==0;handles.CH1_index=CH1_index;else return;end
 
+
 %% GET VOLTAGE / TEMPERATURE
 try
     [Voltage,Temperature]=volt_temp_process(handles,CH1_index);
@@ -36,21 +37,20 @@ catch
     Temperature='0';
 end
 
-%% SET MUX | CLEAR METADATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CLEAR METADATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 progress = waitbar(0,handles.language.progress_str1,'Name',handles.language.progress_title4 ...
 ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
 handles.main.GUI.width_bar handles.main.GUI.height_bar]);   
 
 for ch=1:size(handles.CHANNEL.ch_serial,2)
-    QuickSendReceive(handles.CHANNEL.ch_serial{ch},'metadata clear',10,'WroteNumMetaDataRecords(0x',')');
-    QuickSendReceive(handles.CHANNEL.ch_serial{ch},['adcmux ' num2str(1)],10,'MuxRegisteriscurrently:0x',0);  
+    QuickSendReceive(handles.CHANNEL.ch_serial{ch},'metadata clear',10,'WroteNumMetaDataRecords(0x',')'); 
 end 
 
 close(progress)
 
 
-%% WAIT FOR SYNC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WAIT FOR SYNC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     progress = waitbar(0,handles.language.progress_str7,'Name',handles.language.progress_title4 ...
     ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
@@ -59,7 +59,7 @@ close(progress)
 sync=0;
 error_val=0;
 loop_status=true;
-data=char(zeros(1,size(handles.CHANNEL.ch_serial,2)));
+data=regexprep(char(num2str(ones(1,size(handles.CHANNEL.ch_serial,2)))),'[^\w'']',''); data=strrep(data, '1', '-');
 while sync<1
     numsat=QuickSendReceive(handles.CHANNEL.ch_serial{1,1},'numsats',10,'Lastpacketshowed','sattelites.');
     for ch=1:size(handles.CHANNEL.ch_serial,2)
@@ -75,10 +75,11 @@ while sync<1
         end
             data_raw(end:end);
             data(handles.CHANNEL.ch_info{1,ch}.ChNb)=data_raw(end:end);
+            
     end
 
     if isempty(strfind(data,'N'));sync=1; end
-    waitbar(1,progress,sprintf('%s',[handles.language.sync_err2 ' : ' data ' | ' handles.language.sync_err3 ' : ' numsat]));
+    waitbar(1,progress,[handles.language.sync_err2 ' : ' data ' | ' handles.language.sync_err3 ' : ' numsat]);
     pause(3)
 end
 
@@ -89,7 +90,7 @@ if loop_status==false
 end
 
 
-%% GET TIME FOR START %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GET TIME FOR START %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 define_process_time=15;
 timeGPS=QuickSendReceive(handles.CHANNEL.ch_serial{1,1},'gettime',10,'LastTime&DatefromGPSwas:','(');
@@ -97,89 +98,48 @@ time_GPS_dec=datenum(timeGPS,'yyyy-mm-dd,HH:MM:SS');
 time_GPS_dec=time_GPS_dec+define_process_time/86400;
 start_time=datestr(time_GPS_dec,'yyyy-mm-dd,HH:MM:SS');
 
-%% SET CALIBRATOR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SET CALIBRATOR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% CAL voltage
+%CAL voltage
 QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},'calvoltage 0.5',10,'Voltageto:',';');
     
-% CAL channel
+%CAL channel
 QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},['calchannels 0x' cal_type],10,'maskiscurrentlysetto:0x','.');
 
 
 %% COLLECT CALLIBRATION 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-timerVal = tic;
-%FREQ=[1.5625E-2,3.1250E-2,6.2500E-2,0.125,0.25,0.5,1,2,4,8,16,32,64];
-FREQ=[0.5,1,2,4,8];
-DUTY=100;
-SR=[0,0,0,0,0];
-gain=[0,0,0,0,0];
-%cycle=[2,2,2,4,4,8,8,16,32,64,128,256,512];
-cycle=[4,8,8,16,32];
-run_for=ceil((1./FREQ).*cycle+(1./FREQ)+6);
-time_between_files=3;
-letters='_LCAL';
 
-% RUN CALIBRATION ACQUISTION
-[run_in]=l_run_schedule(start_time,false,letters,handles,FREQ,DUTY,SR,gain,run_for,time_between_files,0);
-run_in=run_in+define_process_time-ceil(toc(timerVal))+2;
+ timerVal = tic;
+ DUTY= 100;
+ FREQ=  [0.5,1,2,4,8,1,2,4,8,16,32];
+ SR=    [0,0,0,0,0,2,2,2,2,2,2];
+ gain=  [0,0,0,0,0,0,0,0,0,0,0];
+ cycle= [4,8,8,16,32,6,6,12,24,48,96];
+ run_for=ceil((1./FREQ).*cycle+(1./FREQ)+6);
+ time_between_files=3;
+ letters={'_LCAL','_LCAL','_LCAL','_LCAL','_LCAL','_MCAL','_MCAL','_MCAL','_MCAL','_MCAL','_MCAL'}; 
 
-
-%% WAIT FOR END OF ACQUISITION
-
-    progress = waitbar(0,handles.language.progress_title4,'Name',handles.language.progress_title4 ...
-    ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
-    handles.main.GUI.width_bar handles.main.GUI.height_bar]);   
-    set(progress, 'WindowStyle','modal', 'CloseRequestFcn','');
+ % RUN CALIBRATION ACQUISTION
+ [run_in]=l_run_schedule(start_time,false,letters,handles,FREQ,DUTY,SR,gain,run_for,time_between_files,30);
+ run_in=run_in+define_process_time-ceil(toc(timerVal))+2+50;
+ 
+ %WAIT FOR END OF ACQUISITION
+ progress = waitbar(0,handles.language.progress_title4,'Name',handles.language.progress_title4 ...
+ ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
+ handles.main.GUI.width_bar handles.main.GUI.height_bar]);   
+ set(progress, 'WindowStyle','modal', 'CloseRequestFcn','');
     
-for i=1:run_in
+ for i=1:run_in
     
     pause(1)
     pourcentage=[sprintf('%0.2f',(i/run_in)*100) ' %'];
     waitbar(i/run_in,progress,sprintf('%s',[handles.language.calibration_msg1 ' :' pourcentage]));
 
-end
-delete(progress)
+ end
+ delete(progress)
 
-%% GET TIME FOR START %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-timeGPS=QuickSendReceive(handles.CHANNEL.ch_serial{1,1},'gettime',10,'LastTime&DatefromGPSwas:','(');
-time_GPS_dec=datenum(timeGPS,'yyyy-mm-dd,HH:MM:SS');  
-time_GPS_dec=time_GPS_dec+define_process_time/86400;
-start_time=datestr(time_GPS_dec,'yyyy-mm-dd,HH:MM:SS');
 
 %% COLLECT CALLIBRATION 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-timerVal = tic;
-FREQ=[1,2,4,8,16,32];
-DUTY=100;
-SR=[2,2,2,2,2,2];
-gain=[0,0,0,0,0,0];
-cycle=[8,8,16,32,64,128];
-run_for=ceil((1./FREQ).*cycle+(1./FREQ)+6);
-time_between_files=3;
-letters='_MCAL';
-    
-% RUN CALIBRATION ACQUISTION
-[run_in]=l_run_schedule(start_time,false,letters,handles,FREQ,DUTY,SR,gain,run_for,time_between_files,0);
-run_in=run_in+define_process_time-ceil(toc(timerVal))+2;
-
-
-%% WAIT FOR END OF ACQUISITION
-
-    progress = waitbar(0,handles.language.progress_title4,'Name',handles.language.progress_title4 ...
-    ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
-    handles.main.GUI.width_bar handles.main.GUI.height_bar]);   
-    set(progress, 'WindowStyle','modal', 'CloseRequestFcn','');
-    
-for i=1:run_in
-    
-    pause(1)
-    pourcentage=[sprintf('%0.2f',(i/run_in)*100) ' %'];
-    waitbar(i/run_in,progress,sprintf('%s',[handles.language.calibration_msg1 ' :' pourcentage]));
-
-end
-delete(progress)
-
-%% GET TIME FOR START %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 timeGPS=QuickSendReceive(handles.CHANNEL.ch_serial{1,1},'gettime',10,'LastTime&DatefromGPSwas:','(');
@@ -188,20 +148,19 @@ time_GPS_dec=time_GPS_dec+define_process_time/86400;
 start_time=datestr(time_GPS_dec,'yyyy-mm-dd,HH:MM:SS');
 
 
-%% COLLECT CALLIBRATION 3 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 timerVal = tic;
 FREQ=[1,2,4,8,16,32,64,128];
 DUTY=100;
 SR=[4,4,4,4,4,4,4,4];
 gain=[0,0,0,0,0,0,0,0];
-cycle=[8,16,32,64,64,128,256,512];
+cycle=[8,10,24,32,64,128,192,384];
 run_for=ceil((1./FREQ).*cycle+(1./FREQ)+4);
 time_between_files=3;
 letters='_HCAL';
 
     
 % RUN CALIBRATION ACQUISTION
-[run_in]=l_run_schedule(start_time,false,letters,handles,FREQ,DUTY,SR,gain,run_for,time_between_files,0);
+[run_in]=l_run_schedule(start_time,false,letters,handles,FREQ,DUTY,SR,gain,run_for,time_between_files,25);
 run_in=run_in+define_process_time-ceil(toc(timerVal))+2;
 
 
@@ -221,92 +180,23 @@ for i=1:run_in
 end
 delete(progress)
 
-% DELETE EXISTING OPEN SERIAL PORTS
-newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);end
-pause(3)
+%% STOP CALIBRATOR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% SAVE DATA
+%CAL voltage
+QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},'calvoltage 0',10,'Voltageto:',';');
 
-% TURN COM PORTS into SD cards
-
-
-%% CONNECT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Check number of drive before UMASS
-import java.io.*;
-f=File('');
-r=f.listRoots;
-NbD_b_UMASS=numel(r);
-pause(1)
-COM_Nb=size(findCOM,1);
-status_SD=false;
-
-while status_SD~=true
-
-[ handles,CH1_index,status ] = connection_process( handles );
-if status==1;break;end
-if status==0;handles.CH1_index=CH1_index;else return;end
-
-% TURN COM PORTS into SD cards
-status_SD=l_SDavailable1( handles,size(handles.CHANNEL.ch_serial,2) );
-
-end
-
-% Restart timer if stop (GUI issue)
-ACQ_timer=timerfind('Name','ACQ_timer');
-if isempty(ACQ_timer)
-    A.pass=handles;
-    handles.timer_start = timer('TimerFcn',@timer_ini,'BusyMode','queue','UserData'...
-                                  ,A,'ExecutionMode','fixedRate','Period',1.0,'Name','ACQ_timer');
-    start(handles.timer_start);
-end
-
-% CHECK THAT ALL SDs APPEARED
-l_SDavailable2( handles,NbD_b_UMASS,COM_Nb );
+%CAL channel
+QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},'calchannels 0x00',10,'maskiscurrentlysetto:0x','.');
 
 
-% WAIT
-h = waitbar(0,'Please wait...');
-steps = 5;
-for step = 1:steps
-    pause(1)
-    waitbar(step / steps)
-end 
-
- EXT='*CAL.Z3D';
-
-% CHECK IF THE COPY FUNCTION CAN SEE ALL DRIVES
-drive=0;
-while drive<NbD_b_UMASS
-import java.io.*;f=File('');r=f.listRoots;drive=0;
-for i=1:numel(r)   
-     list=dir_fixed([char(r(i)) EXT]);
-     if ~isempty(list) && ~strcmp(char(r(i)),'C:\') && ~strcmp(char(r(i)),'D:\')
-        drive=drive+1;
-     end
-end
-end
-close(h)
-
-%% Copy files
-       
-        folder=['calibrate' filesep 'temp'];
-        if ~exist(folder,'dir');mkdir(folder);end
-        dir_path=copy_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
-            handles.main.GUI.width_bar,handles.main.GUI.height_bar,folder,EXT,true);
-        if strcmp(dir_path,'empty')
-            warndlg('No z3D files found','Copy Z3Ds')
-            return;
-        end
-        
-% Delete file
-         delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
-                        handles.main.GUI.width_bar,handles.main.GUI.height_bar,'*.Z3D')   
-
-%% DELETE SERIAL OBJ
+%% STREAM FILE
+[ dir_path ] = stream_file( handles );
+                    
+% DELETE SERIAL OBJ
 newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);end
 
-% ANALYSE CALIBRATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%dir_path='C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ\calibrate\temp\2015-01-21\10_26_Marc.Benoit_ZEN1\ZenRawData';
+%% ANALYSE CALIBRATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%dir_path='C:\Users\Marc.Benoit\Desktop\cal';
 
 error=false;
 DATA=data_upload(dir_path,handles);
@@ -315,112 +205,30 @@ max_sch=size(DATA,1);
 
 for sch=1:max_sch
     
-    
     ADfreq=DATA(sch,1).ADfreq;
     Tx_freq=DATA(sch,1).period_divider;
     
     if ADfreq==256
-        switch Tx_freq
-            case 1.5625E-2
-                stacks=2;
-            case 3.1250E-2
-                stacks=2;
-            case 6.2500E-2
-                stacks=2;
-            case 0.125
-                stacks=4;
-            case 0.25
-                stacks=3;
-            case 0.5
-                stacks=3;
-            case 1
-                stacks=6;
-            case 2
-                stacks=6;
-            case 4
-                stacks=6;
-            case 8
-                stacks=16;      
-            case 16
-                stacks=16;   
-            case 32
-                stacks=32;      
-            case 64
-                stacks=32;
-        end
-        
+            nb_stack=[1.5625E-2,2;3.1250E-2,2;6.2500E-2,2;0.125,4;0.25,3;
+                0.5,3;1,6;2,6;4,10;8,20;16,16;32,32;64,32;];    
     elseif ADfreq==1024
-        switch Tx_freq
-            case 1.5625E-2
-                stacks=2;
-            case 3.1250E-2
-                stacks=2;
-            case 6.2500E-2
-                stacks=2;
-            case 0.125
-                stacks=4;
-            case 0.25
-                stacks=3;
-            case 0.5
-                stacks=6;
-            case 1
-                stacks=6;
-            case 2
-                stacks=6;
-            case 4
-                stacks=14;
-            case 8
-                stacks=16;      
-            case 16
-                stacks=16;   
-            case 32
-                stacks=16;      
-            case 64
-                stacks=16;
-        end
-        
+            nb_stack=[1.5625E-2,2;3.1250E-2,2;6.2500E-2,2; 0.125,4;0.25,3;
+                0.5,6;1,4;2,4;4,8;8,16;16,32;32,64]; 
     elseif ADfreq==4096
-        switch Tx_freq
-            case 0.125
-                stacks=3;
-            case 0.25
-                stacks=3;
-            case 0.5
-                stacks=6;
-            case 1
-                stacks=2;
-            case 2
-                stacks=8;
-            case 4
-                stacks=16;
-            case 8
-                stacks=16;      
-            case 16
-                stacks=16;   
-            case 32
-                stacks=16;      
-            case 64
-                stacks=16;
-            case 128
-                stacks=128;
-            case 256
-                stacks=128;
-            case 512
-                stacks=512;
-            case 1024
-                stacks=1024;
-        end        
-        
+            nb_stack=[0.125,3;0.25,3;0.5,6;1,4;2,3;4,10;8,12;16,26;
+                32,52;64,54;128,118];      
     end
     
+    stacks=nb_stack(nb_stack(:,1)==Tx_freq,2);
     Tx_period=1/Tx_freq;
     pts_stack=ADfreq*Tx_period;
-    
+
  
 % CHECK SIZE OF TIMESERIE
-%offset=3/4*pts_stack+32;
 offset=32;
-min_length=(Tx_period*ADfreq)+(stacks*pts_stack)+offset;
+min_length=(pts_stack)+(stacks*pts_stack)+offset;
+
+disp(['Freq:' num2str(Tx_freq) ' , ADfreq:' num2str(ADfreq) ' | minLL:' num2str(min_length) ' | ' num2str(size(DATA(sch,1).ts_data,1))]);
 
  for chn=1:max_chn    
     if size(DATA(sch,chn).ts_data,1)<min_length
@@ -431,7 +239,7 @@ min_length=(Tx_period*ADfreq)+(stacks*pts_stack)+offset;
  end
  
 if error==true;
-    stacks=stacks-1;
+    %stacks=stacks-1;
     continue;
 end
 
@@ -464,28 +272,33 @@ TS=zeros(pts_stack,chn);
     
   end
  
-  figure(5+sch)
+  figure(sch)
   subplot(3,1,1)
-  plot(TS)  
+  plot(TS) 
+  ylabel('Voltage (V)')
+  xlabel('Points')
   title(['ADC freq: ' num2str(ADfreq) ' | Tx freq :' num2str(Tx_freq)])
   subplot(3,1,2)
   semilogx(f,PHASE)
+  ylabel('Phase (mrad)')
+  xlabel('Freq (hz)')
   subplot(3,1,3)
   semilogx(f,MAG)
-  pause(0.8)
-  saveas(figure(5+sch),[dir_path filesep 'fig' num2str(5+sch)], 'jpg')
-  close(figure(5+sch))
+  ylabel('Voltage (V)')
+  xlabel('Freq (hz)')
+  pause(1)
+  saveas(figure(sch),[fileparts(dir_path) filesep 'cal' num2str(sch)], 'jpg')
+  close(figure(sch))
 end
 
 
-% % %% SAVE CALIBRATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % %load('DATA.mat')
+%% SAVE CALIBRATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 time=now;
 if ~exist('calibrate','dir');mkdir('calibrate');end
 file_name=['calibrate/zen' num2str(DATA(1,1).Box_id) '.cal'];
+
 fid = fopen(file_name,'w');
-
-
 
 line1='$GDP.TYPE,Zen';
 line2='$GDP.PROGVER,ZenACQ';
@@ -537,9 +350,15 @@ end
 
 fclose(fid);
 
+% keep a copy in the temp file
+copyfile(file_name,fileparts(dir_path));
+
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 set(handles.msg_txt,'Visible','on')
+
+h = msgbox('Calibration Completed','Calibration');
+uiwait(h);
 
 
 end

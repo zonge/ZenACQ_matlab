@@ -1,7 +1,7 @@
 function varargout = ZenOptions(varargin)
 % ZENOPTIONS MATLAB code for ZenOptions.fig
 
-% Last Modified by GUIDE v2.5 12-Jan-2015 18:02:14
+% Last Modified by GUIDE v2.5 26-Feb-2015 17:28:34
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -58,18 +58,20 @@ attch_list={list(isfile).name};
 
 
 
-tabgp = uitabgroup('Position',[0.11 0.105 0.756 0.377]);
+tabgp = uitabgroup('Position',[0.085 0.105 0.806 0.377]);
 tab4 = uitab(tabgp,'Title','Zen Version');
 tab3 = uitab(tabgp,'Title','SD mode');
+tab6 = uitab(tabgp,'Title','Calibrate CRES');
 tab1 = uitab(tabgp,'Title','MTFT estimates');
 tab2 = uitab(tabgp,'Title','ECR limits');
 tab5 = uitab(tabgp,'Title','Attachment');
 
 
+
 uicontrol(tab1,'Style',...
                   'pushbutton',...
                   'String','Calculate',...
-                  'Position',[150 60 120 40],...
+                  'Position',[170 60 120 40],...
                   'FontSize',12,...
                   'Units','normalized',...
                   'HandleVisibility','off',...
@@ -88,7 +90,7 @@ uicontrol(tab2,'Style',...
 uicontrol(tab3,'Style',...
                   'pushbutton',...
                   'String','SD mode',...
-                  'Position',[150 60 120 40],...
+                  'Position',[170 60 120 40],...
                   'FontSize',12,...
                   'Units','normalized',...
                   'HandleVisibility','off',...
@@ -97,11 +99,20 @@ uicontrol(tab3,'Style',...
 uicontrol(tab4,'Style',...
                   'pushbutton',...
                   'String','Zen Info',...
-                  'Position',[150 115 120 40],...
+                  'Position',[170 115 120 40],...
                   'FontSize',12,...
                   'Units','normalized',...
                   'HandleVisibility','off',...
                   'Callback',@(hObject,eventdata)ZenOptions('ZenVersion_Callback',hObject,eventdata,guidata(hObject)));
+              
+uicontrol(tab6,'Style',...
+                  'pushbutton',...
+                  'String','Calibrate',...
+                  'Position',[170 60 120 40],...
+                  'FontSize',12,...
+                  'Units','normalized',...
+                  'HandleVisibility','off',...
+                  'Callback',@(hObject,eventdata)ZenOptions('CalibrateCRES_Callback',hObject,eventdata,guidata(hObject)));
 
 handles.E_lenght=uicontrol(tab2,'Style',...
                   'edit',...
@@ -148,7 +159,7 @@ handles.Result_CRES=uicontrol(tab2,'Style',...
                   'HandleVisibility','off');
                   
 handles.ZenInfo=uitable(tab4,...
-                  'Position',[10 10 400 100],...
+                  'Position',[10 10 460 100],...
                   'Units','normalized',...
                   'HandleVisibility','on');
               
@@ -176,6 +187,17 @@ uicontrol(tab5,'Style',...
                   'Units','normalized',...
                   'HandleVisibility','off',...
                   'Callback',@(hObject,eventdata)ZenOptions('Zenattach_sup_Callback',hObject,eventdata,guidata(hObject)));
+              
+handles.calibrateCRES_status=uicontrol(tab6,'Style',...
+                  'text',...
+                  'String','',...
+                  'Position',[180 20 100 30],...
+                  'HorizontalAlignment','center',...
+                  'FontSize',13,...
+                  'Units','normalized',...
+                  'HandleVisibility','off',...
+                  'ForeGroundColor','black',...
+                  'HorizontalAlignment','center');
               
 % Update handles structure
 guidata(hObject, handles);
@@ -249,7 +271,7 @@ end
 
 
 
-function hour_box_Callback(hObject, eventdata, handles)
+function hour_box_Callback(~, ~, ~)
 % hObject    handle to hour_box (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -259,7 +281,7 @@ function hour_box_Callback(hObject, eventdata, handles)
 
 
 % --- Executes during object creation, after setting all properties.
-function hour_box_CreateFcn(hObject, eventdata, handles)
+function hour_box_CreateFcn(hObject, ~, ~)
 % hObject    handle to hour_box (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -272,7 +294,7 @@ end
 
 
 
-function min_box_Callback(hObject, eventdata, handles)
+function min_box_Callback(~, ~, ~)
 % hObject    handle to min_box (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -282,7 +304,7 @@ function min_box_Callback(hObject, eventdata, handles)
 
 
 % --- Executes during object creation, after setting all properties.
-function min_box_CreateFcn(hObject, eventdata, handles)
+function min_box_CreateFcn(hObject, ~, ~)
 % hObject    handle to min_box (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -295,7 +317,7 @@ end
 
 
 
-function sec_box_Callback(hObject, eventdata, handles)
+function sec_box_Callback(~, ~, ~)
 % hObject    handle to sec_box (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -305,7 +327,7 @@ function sec_box_Callback(hObject, eventdata, handles)
 
 
 % --- Executes during object creation, after setting all properties.
-function sec_box_CreateFcn(hObject, eventdata, handles)
+function sec_box_CreateFcn(hObject, ~, ~)
 % hObject    handle to sec_box (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -318,7 +340,7 @@ end
 
 
 % --- Executes on button press in upgrade_firmware.
-function upgrade_firmware_Callback(hObject, eventdata, handles)
+function upgrade_firmware_Callback(~, ~, handles)
 % hObject    handle to upgrade_firmware (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -349,7 +371,7 @@ end
 
 
 % --- Executes on button press in MTestimates_button.
-function MTestimates_button_Callback(hObject, eventdata, handles)
+function MTestimates_button_Callback(~, ~, handles)
 % hObject    handle to MTestimates_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -365,7 +387,7 @@ ZenMTestimates
 
 
 % --- Executes on button press in CRES_max.
-function CRES_max_Callback(hObject, eventdata, handles)
+function CRES_max_Callback(~, ~, handles)
 % hObject    handle to CRES_max (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -419,6 +441,9 @@ guidata(hObject, handles);
 close('ZenOptions')
 
 
+
+
+
 % --- Executes on button press in CRES_max.
 function ZenVersion_Callback(~, ~, handles)
 % hObject    handle to CRES_max (see GCBO)
@@ -447,7 +472,7 @@ for i=1:size(handles.CHANNEL.ch_serial,2)
     % ARM
     data{1,i}=handles.CHANNEL.ch_info{1,ii(i)}.version;
     % FPGA
-    data{2,i}=QuickSendReceive(handles.CHANNEL.ch_serial{1,ii(i)},'version',10,',buildnumber:','(0x');
+    data{2,i}=num2str(str2double(QuickSendReceive(handles.CHANNEL.ch_serial{1,ii(i)},'version',10,',buildnumber:','(0x'))-1);
     Column_cell{1,i}=handles.CHANNEL.ch_info{1,ii(i)}.ChNb;
     
     pourcentage=[sprintf('%0.2f',(i/size(handles.CHANNEL.ch_serial,2))*100) ' %'];
@@ -521,4 +546,40 @@ isfile=~[list.isdir];
 attch_list={list(isfile).name};
 
 set(handles.attch_files,'String',attch_list)
+
+
+% --- Executes on button press in CRES_max.
+function CalibrateCRES_Callback(~, ~, handles)
+% hObject    handle to CRES_max (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+h = warndlg('Make sure all channels are free.', 'CRES Calibration');
+uiwait(h)
+
+% DELETE EXISTING OPEN SERIAL PORTS
+newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
+
+% CONNECT
+[ handles,CH1_index,~ ] = connection_process( handles );
+
+progress = waitbar(0,'Calibrate CRES, takes about 10 seconds','Name','ZenOptions' ...
+,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
+handles.main.GUI.width_bar handles.main.GUI.height_bar]);  
+
+% Calibrate CRES
+QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},'CALIBRATECONTACTRESISTANCE',40,'Command:Complete','.');
+
+
+QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},'GLOBALSAVE',8,'GlobalSave(): Complet','.');
+
+close(progress)
+
+
+set(handles.calibrateCRES_status,'String','Done !','ForeGroundColor','red')
+
+% DELETE EXISTING OPEN SERIAL PORTS
+ newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end
+
+
 

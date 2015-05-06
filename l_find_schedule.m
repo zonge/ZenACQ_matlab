@@ -46,15 +46,13 @@ else
                 end
             end
             set(handles.edit_push,'Visible','on')
-            set(handles.schedule_popup,'String',Files)
+            set(handles.schedule_popup,'String',Files,'Value',1)
         else
-
             for i=1:size(file_dir,1)
                 Files{i,1}=file_dir(i).name(1:end-6);
             end
             set(handles.edit_push,'Visible','on')
             set(handles.schedule_popup,'String',Files)  
-            
         end
             
     end
@@ -62,7 +60,6 @@ else
     main_file=['schedule' filesep Files{1,1} '.' EXT];
 
 end
-
 
 end
 

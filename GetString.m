@@ -24,11 +24,15 @@ end
 % merge the entire response
 d=data.Query;
 clear data;
-s=strjoin(d');
+if size(d,1)>1
+    s=strjoin(d');
+else
+    s=d;
+end
 s(s==' ')=[];
 data.Query{1,1}=deblank(s);
 
-%disp(data.Query)
+%   disp(data.Query)
 
 x = strfind(data.Query,Lookup);
 z=find(~cellfun(@isempty,x),1);        % Cell index

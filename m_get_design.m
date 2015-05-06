@@ -32,11 +32,7 @@ file_content=l_get_file_content( main_file,handles,display_msg );
     % CREATE TABLE TO DISPLAY
     for i=1:nb_of_file_line
         key_sch=l_search_key(['$geometryline' num2str(i)],file_content,main_file);
-        if handles.main.type==1 % TX
-            geo=textscan(key_sch,'%s%s%s%s%s%s%s%s%s','delimiter','|');
-        elseif handles.main.type==0 % RX
-            geo=textscan(key_sch,'%s%s%s%s%s%s%s','delimiter','|');
-        end
+        geo=textscan(key_sch,'%s%s%s%s%s%s%s','delimiter','|,');
         for j=1:7
             if isempty(geo{1,j})
                 geo{1,j}{1,1}='';
@@ -54,8 +50,7 @@ file_content=l_get_file_content( main_file,handles,display_msg );
         handles.Ant.num{i}=str2double(geo{1,6}{1,1});
         handles.Ant.azm{i}=str2double(geo{1,7}{1,1});
         if handles.main.type==1
-        handles.TX.type{i}=geo{1,8}{1,1};
-        handles.TX.sn{i}=geo{1,9}{1,1};
+        handles.TX.sn{i}=str2double(geo{1,6}{1,1});
         end
     end
     

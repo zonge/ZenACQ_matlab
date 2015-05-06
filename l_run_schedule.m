@@ -1,6 +1,5 @@
-function [ run_in ] = l_run_schedule(time,cal,letter,handles,FREQ,DUTY,SR,gain,run_for,time_between_files,run_in,tbl_content )
+function [ run_in ] = l_run_schedule(time,TX_action,letter,handles,FREQ,DUTY,SR,gain,run_for,time_between_files,run_in,tbl_content )
     
-
     ADC_freq=2097152; %ADC speed CONSTANT VARIABLE
    
     if nargin>11
@@ -21,14 +20,14 @@ function [ run_in ] = l_run_schedule(time,cal,letter,handles,FREQ,DUTY,SR,gain,r
     
     close(progress)
     
-    if cal==true
+    %if TX_action==true
+    if nargin>11 % IF NOT CAL
         
         % CAL voltage
         QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'calvoltage 0',10,'Voltageto:',';');
     
         % CAL channel
         QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'calchannels 0x00',10,'maskiscurrentlysetto:0x','.');
-
     
     end
         
@@ -42,25 +41,39 @@ function [ run_in ] = l_run_schedule(time,cal,letter,handles,FREQ,DUTY,SR,gain,r
     max_schedule=size(SR,2); 
     for schedule=1:max_schedule
         
+        % Do not run schedule if there is a break (SR=99)
+        if SR(schedule)==99;run_in=run_in+time_between_files+run_for(schedule);continue;end
+        
         period=(ADC_freq/FREQ(schedule))-1;
         duty=(DUTY*ADC_freq/100/FREQ(schedule))-1;
         if DUTY==0;duty=0;end
         if FREQ(schedule)==0;period=0;end
         
         for ch=1:size(handles.CHANNEL.ch_serial,2)
-            
-            if nargin>11
+              
+            channel_number_str=''; newFile='y';
+            if nargin>11 % SPECIFIC ACTION FOR ACQUISiTION other than Calibration  
+                channel_number_str=sprintf('%02d',handles.CHANNEL.ch_info{1,ch}.ChNb); % ADD CHANNEL NUMBER
                 index=strfind(ch_num',num2str(handles.CHANNEL.ch_info{1,ch}.ChNb));
-                if strcmp(tbl_content{index,1},'Off'); continue;end
+
+                if strcmp(tbl_content{index,1},'Off'); % IF CHANNEL IS OFF
+                    if handles.CHANNEL.ch_info{1,ch}.ChNb==1 && TX_action==true  % If channel 1 is off set schedule to control the TX but don't write file.
+                        newFile='n';
+                    else
+                        continue; % IF A CHANNEL IS OFF DON'T SET SCHEDULE and go to the next iteration
+                    end
+                end
+                
             end
             
-            %channel_number_str='';
-            %if cal==false
-            %    channel_number_str=sprintf('%02d',handles.CHANNEL.ch_info{1,ch}.ChNb);
-            %end
+            % GENERATE NAME AND SET SCHEDULE
+            if iscell(letter)
+                file_name=[sprintf('%02d',schedule) letter{1,schedule}, channel_number_str '.z3d'];
+            else
+                file_name=[sprintf('%02d',schedule) letter channel_number_str '.z3d'];
+            end
             
-            file_name=[sprintf('%.2d',schedule) letter '.z3d'];
-            l_run_schedule_low(handles.CHANNEL.ch_serial{ch},file_name,time,run_in,run_for(schedule),SR(schedule),gain(schedule),period,duty);
+            l_run_schedule_low(handles.CHANNEL.ch_serial{ch},file_name,time,run_in,run_for(schedule),SR(schedule),gain(schedule),period,duty,newFile);
             
         end
         

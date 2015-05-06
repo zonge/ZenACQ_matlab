@@ -21,9 +21,16 @@ file_content=l_get_file_content( ext,handles,display_msg );
     keys.Rx_schedule_selected=l_search_key('$Rx_schedule_selected',file_content,ext);
     keys.time_zone=l_search_key('$time_zone',file_content,ext);
     keys.ZenACQ_mode=l_search_key('$ZenACQ_mode',file_content,ext);
+    keys.ZenCSsr=l_search_key('$ZenCSsr',file_content,ext);
+    keys.RealTimeSR=l_search_key('$RealTimeSR',file_content,ext);
     
+    if strcmp(keys.ZenCSsr,'$ZenCSsr')
+        keys.ZenCSsr='2';
+    end
     
-    
+    if strcmp(keys.RealTimeSR,'$RealTimeSR')
+       keys.RealTimeSR='0';
+    end
     
 %end
 

@@ -1,4 +1,4 @@
-﻿//////////////////////////////////////////////
+//////////////////////////////////////////////
 //ZenACQ ///////////////////////////////////
 //////////////////////////////////////////////
 
@@ -47,7 +47,7 @@ $a_space_str = A-Space :
 $s_space_str = S-Space :
 $z_positive_str = Z positive :
 $save_push_str = Save
-$check_setup_str = CHECK SETUP
+$check_setup_str = CRES
 $display_survey_str = SHOW LAYOUT
 $display_real_time_str = REAL TIME
 
@@ -82,8 +82,8 @@ $yes = yes
 $no = no
 
 // Version check
-$version_err1 = Your ZenBox does not have the same firmware on all the channels. Please go to Options to check and upgrade to the most recent firmware.	
-$version_err2 = This box uses different firmwares !!
+$version_err1 = Your ZenBox does not have the same firmware on all the channels. Please go to Options to check and upgrade to the most recent firmware.
+$version_err2 = Different firmwares!!
 
 // Parameters AUTO-Check
 $input_err1 = STATION must be an integer !

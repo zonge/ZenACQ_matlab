@@ -22,7 +22,7 @@ function varargout = ZenRealTime(varargin)
 
 % Edit the above text to modify the response to help ZenRealTime
 
-% Last Modified by GUIDE v2.5 21-Dec-2014 19:08:15
+% Last Modified by GUIDE v2.5 16-Apr-2015 11:54:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,6 +62,7 @@ handles.main=ZenACQ_vars.main;
 handles.setting=ZenACQ_vars.setting;
 handles.language=ZenACQ_vars.language;
 handles.CHANNEL=ZenACQ_vars.CHANNEL;
+handles.CH1_index=ZenACQ_vars.CH1_index;
 
 handles.selected_ch=[];
 handles.max_buf=1024;
@@ -80,28 +81,10 @@ for i=1:size(handles.CHANNEL.ch_info,2)
 end
 
 
-% % TEST
-% 
-% FREQ=0.5;
-% DUTY=100;
-% 
-%     ADC_freq=2097152; %ADC speed CONSTANT VARIABLE
-%     period=(ADC_freq/FREQ)-1;
-%     duty=(DUTY*ADC_freq/100/FREQ)-1;
-%     if DUTY==100;duty=1999999999;end
-%     if FREQ==0;period=4194303999;end
-% 
-%     
-% for serial=1:size(handles.CHANNEL.ch_serial,2)
-% fprintf(handles.CHANNEL.ch_serial{serial},['adcperiod ' num2str(period)]); 
-% pause(0.1)
-% fprintf(handles.CHANNEL.ch_serial{serial},['adcduty ' num2str(duty)]); 
-% pause(0.1)
-% fprintf(handles.CHANNEL.ch_serial{serial},'calvoltage 0.5'); 
-% pause(0.1)
-% fprintf(handles.CHANNEL.ch_serial{serial},'Calchannel 0xff'); 
-% pause(0.1)
-% end
+% STOP TX
+QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'adcduty 4294967295',10,'(0x',')');
+QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'adcperiod 4294967295',10,'(0x',')');
+
 
 % Update handles structure
 guidata(hObject, handles);
@@ -256,6 +239,10 @@ function togglebutton_Callback(hObject, ~, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+Toggle_status=get(hObject,'Value');
+SR=2^(8+str2double(handles.setting.RealTimeSR));
+downsampling=0; % 0 or 1 == no downsampling
+
 % GET CH number.
 ChNb=zeros(1,size(handles.CHANNEL.ch_info,2));
 for i=1:size(handles.CHANNEL.ch_info,2)
@@ -266,10 +253,50 @@ nb_of_channel=size(handles.selected_ch,2);
 % SET ADC RATE
 for ch=1:nb_of_channel
     serial=ChNb==handles.selected_ch(ch);
-    fprintf(handles.CHANNEL.ch_serial{serial},'ADCRATE 256'); 
+    fprintf(handles.CHANNEL.ch_serial{serial},['ADCRATE ' num2str(SR)]);
+    fprintf(handles.CHANNEL.ch_serial{serial},['StreamingDecimationModulus ' num2str(downsampling)]);     
 end
 
-pause(0.1)
+% SET FREQUENCY
+TX_string=get(handles.tx_freq_popup,'String');
+TX_selected=get(handles.tx_freq_popup,'Value');
+TX_freq=str2double((strrep(TX_string{TX_selected,1} , 'Hz', '')));
+Duty_string=get(handles.duty_cycle_val,'String');
+Duty_selected=get(handles.duty_cycle_val,'Value');
+TX_duty=str2double((strrep(Duty_string{Duty_selected,1} , '%', '')));
+ADC_freq=2097152; %ADC speed CONSTANT VARIABLE
+
+% SET FFT WINDOW TYPE
+FFT_win=get(handles.win_type,'Value');
+
+% SET TRANSMITTER
+if ~isnan(TX_freq) && Toggle_status==1
+ 
+    period=(ADC_freq/TX_freq)-1;
+    duty=(TX_duty*ADC_freq/100/TX_freq)-1;
+    if TX_duty==0;duty=0;end
+    if TX_freq==0;period=0;end
+    
+    % CAL voltage
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'calvoltage 0',10,'Voltageto:',';');
+
+    % CAL channels (external)
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'calchannels 0x00',10,'maskiscurrentlysetto:0x','.');
+
+    % CAL DUTY 
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},['adcduty ' num2str(duty)],10,'Dutydivisoris:','(0x');
+
+    % CAL PERIOD
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},['adcperiod ' num2str(period)],10,'perioddivisoris:','(0x');
+
+elseif isnan(TX_freq) && Toggle_status==1
+
+    % CAL DUTY 
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'adcduty 4294967295',10,'(0x',')');
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'adcperiod 4294967295',10,'(0x',')');
+    
+end
+    
 if get(hObject,'Value')==1
 	set(handles.ch_1,'Enable','off');
     set(handles.ch_2,'Enable','off');
@@ -277,34 +304,51 @@ if get(hObject,'Value')==1
     set(handles.ch_4,'Enable','off');
     set(handles.ch_5,'Enable','off');
     set(handles.ch_6,'Enable','off');
-    set(handles.ch_7,'Enable','off');
-    set(handles.ch_8,'Enable','off');
-    set(handles.ch_9,'Enable','off');
 
     set(handles.nb_point_box,'Enable','off');
+    set(handles.tx_freq_popup,'Enable','off');
+    set(handles.duty_cycle_val,'Enable','off');
+    set(handles.win_type,'Enable','off');
+    set(handles.freqVSperiod,'Enable','off');
+    
+    
     
     for ch=1:nb_of_channel
         serial=ChNb==handles.selected_ch(ch);
         fprintf(handles.CHANNEL.ch_serial{serial},'Zapout 1');
     end
-    
+
 elseif get(hObject,'Value')==0
+    
     set(handles.ch_1,'Enable','on');
     set(handles.ch_2,'Enable','on');
     set(handles.ch_3,'Enable','on');
     set(handles.ch_4,'Enable','on');
     set(handles.ch_5,'Enable','on');
     set(handles.ch_6,'Enable','on');
-    set(handles.ch_7,'Enable','on');
-    set(handles.ch_8,'Enable','on');
-    set(handles.ch_9,'Enable','on');
 
     set(handles.nb_point_box,'Enable','on');
+    set(handles.tx_freq_popup,'Enable','on');
+    set(handles.duty_cycle_val,'Enable','on');
+    set(handles.win_type,'Enable','on');
+    set(handles.freqVSperiod,'Enable','on');
     
     for ch=1:nb_of_channel
         serial=ChNb==handles.selected_ch(ch);
         fprintf(handles.CHANNEL.ch_serial{serial},'Zapout 0');
     end
+    
+    % STOP TX
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'adcduty 4294967295',10,'(0x',')');
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'adcperiod 4294967295',10,'(0x',')');
+  
+end
+
+
+if get(handles.freqVSperiod,'Value')==1
+frequency_scale=true;
+elseif get(handles.freqVSperiod,'Value')==2
+frequency_scale=false;
 end
 
 zone=str2double(handles.setting.time_zone);
@@ -315,9 +359,8 @@ gps_week=fix((datenum(date)-GpsRef)/7);  % Get Number of week
 Week_time=addtodate(GpsRef, gps_week*604800+zone*3600-16, 'second');  %%UTC time
 
 if ~isempty(handles.selected_ch)
-Display_Zapout( handles,handles.selected_ch,Week_time );
+Display_Zapout( handles,handles.selected_ch,Week_time,FFT_win,downsampling,SR,frequency_scale );
 end
-
 
 % --- Executes when user attempts to close figure1.
 function figure1_CloseRequestFcn(hObject, ~, handles)
@@ -327,8 +370,102 @@ function figure1_CloseRequestFcn(hObject, ~, handles)
 
 % Hint: delete(hObject) closes the figure
 if get(handles.togglebutton,'Value')==0
+    % STOP TX
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'adcduty 4294967295',10,'(0x',')');
+    QuickSendReceive(handles.CHANNEL.ch_serial{handles.CH1_index},'adcperiod 4294967295',10,'(0x',')');
+    
     delete(hObject);
 else
-    h = msgbox('Please, stop the straming first','ZenACQ');
+    h = msgbox('Please, stop the streaming first','ZenACQ');
     uiwait(h);
+end
+
+
+% --- Executes on selection change in tx_freq_popup.
+function tx_freq_popup_Callback(~, ~, ~)
+% hObject    handle to tx_freq_popup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns tx_freq_popup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from tx_freq_popup
+
+
+% --- Executes during object creation, after setting all properties.
+function tx_freq_popup_CreateFcn(hObject, ~, ~)
+% hObject    handle to tx_freq_popup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in duty_cycle_val.
+function duty_cycle_val_Callback(~, ~, ~)
+% hObject    handle to duty_cycle_val (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns duty_cycle_val contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from duty_cycle_val
+
+
+% --- Executes during object creation, after setting all properties.
+function duty_cycle_val_CreateFcn(hObject, ~, ~)
+% hObject    handle to duty_cycle_val (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in win_type.
+function win_type_Callback(~, ~, ~)
+% hObject    handle to win_type (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns win_type contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from win_type
+
+
+% --- Executes during object creation, after setting all properties.
+function win_type_CreateFcn(hObject, ~, ~)
+% hObject    handle to win_type (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in freqVSperiod.
+function freqVSperiod_Callback(hObject, eventdata, handles)
+% hObject    handle to freqVSperiod (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+% --- Executes during object creation, after setting all properties.
+function freqVSperiod_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to freqVSperiod (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

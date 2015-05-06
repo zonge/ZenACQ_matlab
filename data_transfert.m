@@ -1,9 +1,9 @@
-function [ handles,dir_path ] = data_transfert( handles,EXTENSION )
+function [ handles,dir_path ] = data_transfert( handles,EXTENSION,list_Drive_Before )
 % Copy and/or delete Zen DATA
 
         % COPY FILES
         dir_path=copy_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
-            handles.main.GUI.width_bar,handles.main.GUI.height_bar,handles.path_output,EXTENSION);
+            handles.main.GUI.width_bar,handles.main.GUI.height_bar,handles.path_output,EXTENSION,list_Drive_Before);
         
         
         if strcmp(dir_path,'empty') 
@@ -24,17 +24,17 @@ function [ handles,dir_path ] = data_transfert( handles,EXTENSION )
             
             waitfor(DoYouWantToDeleteFiles)
             
-            switch DoYouWantToDeleteFiles
-                case handles.language.yes % IF YES FOR Z3D DELETION
+            if  strcmp(DoYouWantToDeleteFiles,handles.language.yes) % IF YES : DELETION
                     delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
-                        handles.main.GUI.width_bar,handles.main.GUI.height_bar,EXTENSION)  
-                case handles.language.no  % IF NO FOR Z3D DELETION
-                    return;
+                    handles.main.GUI.width_bar,handles.main.GUI.height_bar,EXTENSION,list_Drive_Before)
+                    
+                    % DELETE ALL .CSV FILES
+                    delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
+                    handles.main.GUI.width_bar,handles.main.GUI.height_bar,'*.CSV',list_Drive_Before)  
+                    
             end
             
-            % DELETE ALL .CSV FILES
-            delete_files(handles.main.GUI.left_bar,handles.main.GUI.bottom_bar, ...
-            handles.main.GUI.width_bar,handles.main.GUI.height_bar,'*.CSV')  
+
         end
 
 

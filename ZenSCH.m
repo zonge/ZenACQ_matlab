@@ -1,7 +1,7 @@
 function varargout = ZenSCH(varargin)
 % ZENSCH MATLAB code for ZenSCH.fig
 
-% Last Modified by GUIDE v2.5 05-Nov-2014 15:30:03
+% Last Modified by GUIDE v2.5 02-Mar-2015 06:48:21
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -29,22 +29,25 @@ function ZenSCH_OpeningFcn(hObject, ~, handles, varargin)
 % Choose default command line output for ZenSCH
 handles.output = hObject;
 
-
 ZenACQ_vars=getappdata(0,'tunnel');  % GET VARIABLES FROM ZenACQ
 handles.edit_file=getappdata(0,'tunnel2');  % GET VARIABLES FROM ZenACQ
 
 handles.main=ZenACQ_vars.main;
 handles.setting=ZenACQ_vars.setting;
 handles.language=ZenACQ_vars.language;
+handles.start_date=ZenACQ_vars.start_date;
 
 % SURVEY TYPE
 survey_type=str2double(handles.setting.ZenACQ_mode);
-if survey_type==2
+if survey_type==2 % IP RX
     set(handles.SR_popup,'String',{'Mid Band'},'Visible','off')
     set(handles.sample_rate_str,'Visible','off')
-elseif survey_type==3
+elseif survey_type==3 % IP TX
     set(handles.SR_popup,'String',{'Mid Band'},'Visible','off')
     set(handles.sample_rate_str,'Visible','off')
+elseif survey_type==1 % MT
+        set(handles.SR_popup,'String',{'High Band','Mid Band','Low Band','Break'},'Visible','on')
+    set(handles.sample_rate_str,'Visible','on')
 end
 
 if handles.main.type==0  % RX
@@ -96,6 +99,9 @@ else
 handles.nb_schedule=0;
 
 end
+
+% set info msg
+set(handles.info_msg,'String',['Time between 2 schedule lines = ' num2str(handles.main.time_btw_sch) 's']);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -325,7 +331,7 @@ elseif (survey_type==2 || survey_type==3) && handles.main.type==1
 end
 
 
-formatSpec='$schline%i = %i;%i;%i\n';
+formatSpec='$schline%i = %i,%i,%i\n';
 fid = fopen(file_name, 'w');
  
 for i=1:handles.nb_schedule
@@ -348,17 +354,29 @@ fclose(fid);
 
 l_modif_file( handles.main.Setting_ext,'$Rx_schedule_selected',Sch_name )
 
-SCH.last_schedule=Sch_name;
+handles.SCH.last_schedule=Sch_name;
 
-setappdata(0,'tunnelback',SCH);        % SET GLOBAL VARIABLE
+setappdata(0,'tunnelback',handles.SCH);        % SET GLOBAL VARIABLE
+
+global SCH_status
+SCH_status=true;
 
 close(ZenSCH);   % CLOSE ZenSCH
+
+
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% CHANGE DURATION 2 TIME ++++++++++++++++++++++++++++++++++++++++++++++++++
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function time2duration_Callback(~, ~, handles)
+
+l_sch_set_table( handles,handles.nb_schedule );  % UPDATE TABLE
 
 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % ACTION WHEN GUI IS CLOSING ++++++++++++++++++++++++++++++++++++++++++++++
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function ZenSCH_CloseRequestFcn(hObject, ~, ~)
+    
 
 delete(hObject);
 

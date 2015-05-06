@@ -7,57 +7,44 @@ function [file_content] = l_read_fileAndError( ext,handles,display_msg )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
 % GET CONTENT
 [file_content,status] = l_read_file(ext);
 
-if nargin>1   % IF MORE THAN EXTENSION ARGUMENTS
-    
-if nargin==3 && display_msg==true    % IF DISPLAY ERROR MESSAGE TRUE
+if nargin==3    %  DISPLAY ERROR MSG IN THE FOUND LANGUAGE
 
-if isempty(handles.language)   % IF LANGUAGE IS NOT AVAILABLE
-
-    % DISPLAY READING ERRORS
+    % IF DISPLAY READING ERRORS = TRUE
+    if display_msg==true   
     switch status
         case 2
-            warndlg(['There are more than one ' ext ' file in the directory. Please delete unused'],'ZenACQ'); 
+            w=warndlg([handles.language.read_file_err1 ext ' ' handles.language.read_file_err2],'ZenACQ'); 
+            uiwait(w);
         case 3
-            %warndlg(['No file (' ext ') found in the directory.'],'ZenACQ');  
+            w=warndlg([handles.language.read_file_err3 ' (' ext ') ' handles.language.read_file_err4],'ZenACQ');
+            uiwait(w);
         case 4
-            warndlg(['Cannot open ' ext ],ext)
+            w=warndlg([handles.language.read_file_err5 ' ' ext ],ext);
+            uiwait(w);
         case 5
-            warndlg([ext ' is empty' ],ext)
+            w=warndlg([ext ' ' handles.language.read_file_err6 ],ext);
+            uiwait(w);
+    end 
     end
 
-else                        % IF LANGUAGE IS AVAILABLE
-
-    % DISPLAY READING ERRORS    
-    switch status
-        case 2
-            warndlg([handles.language.read_file_err1 ext ' ' handles.language.read_file_err2],'ZenACQ'); 
-        case 3
-            %warndlg([handles.language.read_file_err3 ' (' ext ') ' handles.language.read_file_err4],'ZenACQ');  
-        case 4
-            warndlg([handles.language.read_file_err5 ' ' ext ],ext)
-        case 5
-            warndlg([ext ' ' handles.language.read_file_err6 ],ext)
-    end
-      
-end
-end
-
-else
+else  %  DISPLAY ERROR MSG IN ENGLISH WHEN READING LANGUAGE FILE ONLY
     
-    % DISPLAY READING ERRORS
     switch status
         case 2
-            warndlg(['There are more than one ' ext ' file in the directory. Please delete unused'],'ZenACQ'); 
+            w=warndlg(['There are more than one ' ext ' file in the directory. Please delete unused'],'ZenACQ'); 
+            uiwait(w);
         case 3
-            warndlg(['No file (' ext ') found in the directory.'],'ZenACQ');  
+            generate_EN_LAN;
+            [file_content,~] = l_read_file(ext);
         case 4
-            warndlg(['Cannot open ' ext ],ext)
+            w=warndlg(['Cannot open ' ext ],ext);
+            uiwait(w);
         case 5
-            warndlg([ext ' is empty' ],ext)
+            w=warndlg([ext ' is empty' ],ext);
+            uiwait(w);
     end
 
 end
