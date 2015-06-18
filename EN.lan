@@ -41,7 +41,7 @@ $data_push_str = today
 //GEOMETRY PANEL
 $survey_panel_str = Layout
 $stn_str = RX STN :
-$line_str = LINE NAME :
+$line_str = STN NAME :
 $SX_azimuth_str = X AZIMUTH :
 $a_space_str = A-Space :
 $s_space_str = S-Space :

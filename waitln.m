@@ -36,13 +36,13 @@ while loop_status~=1
     if toc>max_user_time
         status=false;
         msg=msgbox(['TIMEOUT: ' command_name ' did not successed after ' ...
-           num2str(max_user_time) ' seconds']);
+           num2str(max_user_time) ' seconds | ' SERIAL_obj.Port]);
         waitfor(msg)
         break;                              % IF THE READ TAKE MORE TIME THAN DEFINED STOP
     elseif toc>max_time_default
         status=false;
         msg=msgbox(['TIMEOUT: ' command_name ' did not successed after ' ...
-           num2str(max_time_default) ' seconds']);
+           num2str(max_time_default) ' seconds | ' SERIAL_obj.Port]);
         waitfor(msg)
         break;                              % IF THE READ TAKE MORE TIME THAN DEFINED STOP
     end

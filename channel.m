@@ -9,6 +9,7 @@ classdef channel
     
     properties
         COM
+        BoardType
         Board
         BoardSN
         SDin

@@ -116,7 +116,7 @@ end
 if j>0
 set(handles.layout_plot,'DataAspectRatio',[1,1,1],'YGrid','On','YMinorGrid','On','XGrid','On','XMinorGrid','On');
 try
-%legend(handles.layout_plot,legend_list,'Visible','off');
+legend(handles.layout_plot,legend_list);
 catch
 end
 xlabel('X-Coordinate')

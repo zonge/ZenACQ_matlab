@@ -13,12 +13,16 @@ status=0;
         msg=msgbox(['Error trying to Read the header off : ' SERIAL_obj.Port ' | Try again, it could be that the firmware is not installed properly on this channel. ' ]);
         waitfor(msg)
         status=1;
-        c=0;
         return;
     end
     
 try
-
+    
+if strcmp(GetString(header,'Ads1282hardwarenot','-'),'found')
+    c.BoardType='357';
+else
+    c.BoardType='339';
+end
 c.ChNb=str2double(GetString(header,'ChannelNumvaluefoundinEEProm:','.'));
 c.BoxNb=str2double(GetString(header,'ZenBoxNumbervaluefoundinEEProm:','.'));
 c.LogData=str2double(GetString(header,'LogDataToFlashvaluefoundinEEProm:','.'));
@@ -32,7 +36,7 @@ end
 c.version=num2str(str2double(version));
 
 catch error_c
-     msgbox(['Error trying to read the header | Error msg: ' error_c.message ])
+     msgbox(['Error trying to read the header on : ' SERIAL_obj.Port ' | Error msg: ' error_c.message ])
 end
  
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

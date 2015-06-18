@@ -466,13 +466,15 @@ end
     ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
     handles.main.GUI.width_bar handles.main.GUI.height_bar]);  
 
-data=cell(2,size(handles.CHANNEL.ch_serial,2));
+data=cell(4,size(handles.CHANNEL.ch_serial,2));
 Column_cell=cell(1,size(handles.CHANNEL.ch_serial,2));
 for i=1:size(handles.CHANNEL.ch_serial,2)
     % ARM
     data{1,i}=handles.CHANNEL.ch_info{1,ii(i)}.version;
     % FPGA
     data{2,i}=num2str(str2double(QuickSendReceive(handles.CHANNEL.ch_serial{1,ii(i)},'version',10,',buildnumber:','(0x'))-1);
+    data{3,i}=handles.CHANNEL.ch_serial{1,ii(i)}.Port;
+    data{4,i}=handles.CHANNEL.ch_info{1,ii(i)}.BoardType;
     Column_cell{1,i}=handles.CHANNEL.ch_info{1,ii(i)}.ChNb;
     
     pourcentage=[sprintf('%0.2f',(i/size(handles.CHANNEL.ch_serial,2))*100) ' %'];
@@ -482,7 +484,7 @@ end
 close(progress)
 
 
-set(handles.ZenInfo,'Data',data,'ColumnName',Column_cell,'RowName',{'ARM','FPGA'},'ColumnWidth','auto')
+set(handles.ZenInfo,'Data',data,'ColumnName',Column_cell,'RowName',{'ARM','FPGA','COM','Type'},'ColumnWidth',{60})
 
 % DELETE EXISTING OPEN SERIAL PORTS
  newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);delete(newobjs);end

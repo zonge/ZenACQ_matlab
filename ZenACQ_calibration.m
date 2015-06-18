@@ -196,7 +196,7 @@ QuickSendReceive(handles.CHANNEL.ch_serial{CH1_index},'calchannels 0x00',10,'mas
 newobjs=instrfind;if ~isempty(newobjs);fclose(newobjs);end
 
 %% ANALYSE CALIBRATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%dir_path='C:\Users\Marc.Benoit\Desktop\cal';
+%dir_path='C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ\calibrate\brd_temp\2015-05-29\11_37_Marc.Benoit_ZEN1';
 
 error=false;
 DATA=data_upload(dir_path,handles);
@@ -269,7 +269,7 @@ TS=zeros(pts_stack,chn);
     [MAG,f,~,PHASE]=func_fft(TS(:,chn),DATA(sch,chn).ADfreq);
     DATA(sch,chn).MAG_PHASE = find_at_freq( DATA(sch,chn).MAG_PHASE,...
                            DATA(sch,chn).period_divider,f,MAG,PHASE );
-    
+ 
   end
  
   figure(sch)
@@ -286,6 +286,19 @@ TS=zeros(pts_stack,chn);
   semilogx(f,MAG)
   ylabel('Voltage (V)')
   xlabel('Freq (hz)')
+  
+   % CHECK if MAG is in the right order of magnitude
+   for chn=1:max_chn             
+    if DATA(sch, chn).MAG_PHASE.mag(1,1)>1.1 || DATA(sch, chn).MAG_PHASE.mag(1,1)<0.8
+          
+    choice = questdlg(['Freq:' num2str(DATA(sch, chn).period_divider) ' Ch:' num2str(chn) ' - Magnitude value is not in the expected order. Make sure nothing is plug to the inputs, and try again. Ratio=' num2str(DATA(sch, chn).MAG_PHASE.mag(1,1)) '. It should be close to 1.'], ...
+	'Warning Calibration', ...
+	'Continue','Abord','Continue');
+
+    if strcmp(choice,'Abord');return;end
+    end
+   end
+  
   pause(1)
   saveas(figure(sch),[fileparts(dir_path) filesep 'cal' num2str(sch)], 'jpg')
   close(figure(sch))

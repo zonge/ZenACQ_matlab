@@ -96,38 +96,5 @@ close(progress)
 
 
 
-
-
-
-%% RECCORD SAVE SCHEDULE (DEBUG)
-progress = waitbar(0,handles.language.progress_str5,'Name',handles.language.progress_title3 ...
-    ,'Position',[handles.main.GUI.left_bar handles.main.GUI.bottom_bar ...
-    handles.main.GUI.width_bar handles.main.GUI.height_bar]);  
-
-    if ~exist('debug','dir');mkdir('debug');end
-
-for ch=1:size(handles.CHANNEL.ch_serial,2)
-
-    [ ~,~,data ]=QuickSendReceive(handles.CHANNEL.ch_serial{ch},'showschedule',10,'Brd339>',0);
-    
-    d=data.Query;
-    s=strjoin(d');
-    dd=textscan(s,'%s','delimiter',' ');
-    formatOut = 'mmddyy_HHMM';
-    
-    fileID = fopen(['debug\' datestr(now,formatOut) '_ch' num2str(handles.CHANNEL.ch_info{1,ch}.ChNb) '.txt'],'w');
-    for i=1:size(dd{1,1},1)
-        fprintf(fileID,'%s\n',dd{1,1}{i,1});
-    end
-    fclose(fileID);
-    
-    pourcentage=[sprintf('%0.2f',(ch/size(handles.CHANNEL.ch_serial,2))*100) ' %'];
-    waitbar(ch/size(handles.CHANNEL.ch_serial,2),progress,sprintf('%s',[handles.language.progress_str5 ' ' pourcentage]));
-end
-
-close(progress)
-
-
-
 end
 

@@ -36,7 +36,7 @@ COM=findCOM;
 % COM PORT NUMBER
 if strcmp('NONE',COM{1,1})
 
-try
+    try
        
     %  Main Window Visible
     figHandles = findall(0,'Type','figure');
@@ -93,12 +93,14 @@ elseif msg_val==-1                          % START COUNTDOWN UNTIL END OF ACQUI
         set(handles.error_msg,'String',[handles.language.timer_msg3 ' ' end_time_str]);
     else                                    % END OF COUNTDOWN, STOP DISPLAYING.
         set(handles.error_msg,'String','');
-        if handles.main.type==1 % if TX Disable Transmit
+        if get(handles.delete_all_files,'Value')==0
+        ZenRX_NbofFiles( handles );         % update number of files
+        set(handles.delete_all_files,'Value',1)
+        end
+        if handles.main.type==1             % if TX Disable Transmit
             set(handles.set_up,'Enable','on','String',handles.language.set_up_transmit_str)
             set(handles.display_real_time,'Enable','on')
             set(handles.check_setup,'Enable','on')
-            % update number of files
-            %handles = ZenRX_NbofFiles( handles );
         end
     end
 end
@@ -158,7 +160,7 @@ end
          set(handles.status_sync_val,'ForegroundColor','green')
          
          % GET TIME
-         timeGPS=QuickSendReceive(handles.CHANNEL.ch_serial{1,1},'gettime',10,'LastTime&DatefromGPSwas:','(');
+         timeGPS=QuickSendReceive(handles.CHANNEL.ch_serial{1,handles.CH1_index},'gettime',10,'LastTime&DatefromGPSwas:','(');
          time_GPS_raw=datenum(timeGPS,'yyyy-mm-dd,HH:MM:SS');
          time_GPS_dec=time_GPS_raw+time_zone+leak_second; % LOCAL TIME
               
@@ -194,7 +196,7 @@ end
          set(handles.status_sync_val,'ForegroundColor','red')
          set(handles.local_time_val,'Value',0)
          
-         timeGPS=QuickSendReceive(handles.CHANNEL.ch_serial{1,1},'gettime',10,'LastTime&DatefromGPSwas:','(');
+         timeGPS=QuickSendReceive(handles.CHANNEL.ch_serial{1,handles.CH1_index},'gettime',10,'LastTime&DatefromGPSwas:','(');
          time_GPS_raw=datenum(timeGPS,'yyyy-mm-dd,HH:MM:SS');
          set(handles.status_sync,'Value',time_GPS_raw)
          
@@ -211,7 +213,7 @@ end
 if mod(second,7)==0
 
     % NUMSAT
-    numsat=QuickSendReceive(handles.CHANNEL.ch_serial{1,1},'numsats',10,'Lastpacketshowed','sattelites.');
+    numsat=QuickSendReceive(handles.CHANNEL.ch_serial{1,handles.CH1_index},'numsats',10,'Lastpacketshowed','sattelites.');
     set(handles.status_sats_val,'String',numsat);
 
     % VOLTAGE
@@ -250,7 +252,9 @@ if mod(second,7)==0
         TOTAL_TIME=get(handles.quick_summary_str,'Value');
         t=addtodate(date_now_val2,TOTAL_TIME, 'second');
         end_acq_str=datestr(t,'dd-mmm-yyyy , HH:MM:SS');
+        if strcmp(get(handles.late_option,'String'),'Late ?')
         set(handles.end_time_str,'String',end_acq_str);
+        end
     end
 
     

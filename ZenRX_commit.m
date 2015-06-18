@@ -7,7 +7,7 @@ function [ handles ] = ZenRX_commit( handles )
 
 
 % [TX] CHECK IF ALREADY TRANSMITTING 
-isTranmiting = l_commit_if_Transmitting( handles );if isTranmiting==false;return;end
+[isTranmiting,handles] = l_commit_if_Transmitting( handles );if isTranmiting==false;return;end
 
 % GET SCHEDULE INFOS
 handles = l_Rx_update_time( handles ); % update start and end time
@@ -39,6 +39,7 @@ set(handles.error_msg,'Value',countdown_time)  % Set start countdown.
 if run_in<60;run_in=60;end % if the acquisition is less than a minute.
 end_time=addtodate(handles.start_time, run_in-handles.main.time_btw_sch, 'second');
 set(handles.box_str,'Value',end_time)  % Set end countdown.
+set(handles.delete_all_files,'Value',0)
 
 % [TX] CHANGE COMMIT STRING MSG [DISPLAY]
 survey_type=str2double(handles.setting.ZenACQ_mode);

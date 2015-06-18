@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="2970317649" file="C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ\ZenACQ.prj" location="C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ" name="ZenACQ" preferred-package-location="C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ\ZenACQ\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="MATLAB Compiler for Standalone Applications">
+  <configuration build-checksum="1245299626" file="C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ\ZenACQ.prj" location="C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ" name="ZenACQ" preferred-package-location="C:\Users\Marc.Benoit\Documents\MATLAB\ZenACQ\ZenACQ\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="MATLAB Compiler for Standalone Applications">
     <param.appname>ZenACQ</param.appname>
     <param.icon>${PROJECT_ROOT}\ZenACQ_resources\icon.ico</param.icon>
     <param.icons>
@@ -8,7 +8,7 @@
       <file>${PROJECT_ROOT}\ZenACQ_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\ZenACQ_resources\icon_16.png</file>
     </param.icons>
-    <param.version>3.64</param.version>
+    <param.version>3.67</param.version>
     <param.authnamewatermark>Marc Benoit</param.authnamewatermark>
     <param.email>marc.benoit@zonge.com</param.email>
     <param.company>Zonge International</param.company>

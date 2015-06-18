@@ -1,4 +1,4 @@
-function [ status ] = l_commit_if_Transmitting( handles )
+function [ status,handles ] = l_commit_if_Transmitting( handles )
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -45,12 +45,15 @@ if strcmp(get(handles.set_up,'String'),handles.language.set_up_transmit_str2)
     end
 
     close(progress);
+    
+    % UPDATE FILE NUMBERS
+    handles = ZenRX_NbofFiles( handles );
    
-status=false;
-set(handles.set_up,'String',handles.language.set_up_transmit_str) % CHANGE COMMIT STR NAME
-set(handles.display_real_time,'Enable','on')
-set(handles.check_setup,'Enable','on')
-return;
+    status=false;
+    set(handles.set_up,'String',handles.language.set_up_transmit_str) % CHANGE COMMIT STR NAME
+    set(handles.display_real_time,'Enable','on')
+    set(handles.check_setup,'Enable','on')
+
 end
 
 
